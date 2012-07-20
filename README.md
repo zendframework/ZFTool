@@ -11,6 +11,6 @@ the following functionality:
 
 ### Requirements
 
- * Zend Framework 2.0.0 or later.
+ * Zend Framework 2.0.0 RC1 or later.
  * PHP 5.3.3 or later.
- * Console access to the application being maintained (shell / command-prompt)
+ * Console access to the application being maintained (shell, command prompt)

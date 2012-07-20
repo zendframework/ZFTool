@@ -12,4 +12,8 @@ class InfoController extends AbstractActionController
     {
         return "You are using Zend Framework ".Version::VERSION."\n";
     }
+
+    public function configAction(){
+
+    }
 }
