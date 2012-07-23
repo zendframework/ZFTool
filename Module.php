@@ -6,7 +6,7 @@ use Zend\Mvc\ModuleRouteListener;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use Zend\Console\Adapter as ConsoleAdapter;
+use Zend\Console\AdapterInterface as ConsoleAdapterInterface;
 
 class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterface, ConfigProviderInterface
 {
@@ -36,7 +36,7 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
         );
     }
 
-    public function getConsoleUsage(ConsoleAdapter $console){
+    public function getConsoleUsage(ConsoleAdapterInterface $console){
         if(!empty($this->config->disableUsage)){
             return null; // usage information has been disabled
         }
