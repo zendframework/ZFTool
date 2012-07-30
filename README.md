@@ -1,8 +1,7 @@
   Zend Framework 2 Tool
 =========================
-Build status: [![Build Status](https://secure.travis-ci.org/zendframework/zf2-tool.png?branch=master)](http://travis-ci.org/zendframework/zf2-tool)
 
-`zf2-tool` is an utility module for maintaining modular Zend Framework 2 applications. It currently provides
+**ZFTool** is an utility module for maintaining modular Zend Framework 2 applications. It currently provides
 the following functionality:
 
  * Module maintenance (installation, configuration, removal etc.)
