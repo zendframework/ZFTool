@@ -9,26 +9,33 @@ the following functionality:
  * Inspection of application configuration.
  * Deploying zf2 skeleton applications.
 
-### Requirements
+## Requirements
 
  * Zend Framework 2.0.0 RC1 or later.
  * PHP 5.3.3 or later.
  * Console access to the application being maintained (shell, command prompt)
 
-### Usage
+## Installation
+ 
+ 1. Clone using `git` or [download zipball](https://github.com/zendframework/ZFTool/zipball/master).
+ 1. Extract to `vendor/ZFTool` in your ZF2 application
+ 1. Edit your `application/application.config.php` and add `ZFTool` to `modules` array.
+ 1. Open console and try one of the following commands...
 
-#### Basic information
+## Usage
+
+### Basic information
 
     zf.php modules [list]           show loaded modules
     zf.php version | --version      display current Zend Framework version
 
-#### Configuration
+### Configuration
 
     zf.php config [list]                list all configuration options
     zf.php config get <name>            display a single config value, i.e. "config get db.host"
     zf.php config set <name> <value>    set a single config value (use only to change scalar values)
 
-#### Classmap generator
+### Classmap generator
 
     zf.php classmap generate <directory> <classmap file> [--append|-a] [--overwrite|-w]
 
