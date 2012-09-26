@@ -5,7 +5,7 @@ namespace ZFTool\Controller;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\Stdlib\ArrayUtils;
-use Zend\Version;
+use Zend\Version\Version;
 
 
 class InfoController extends AbstractActionController
