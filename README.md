@@ -18,7 +18,7 @@ the following functionality:
  
  1. Clone using `git` or [download zipball](https://github.com/zendframework/ZFTool/zipball/master).
  1. Extract to `vendor/ZFTool` in your ZF2 application
- 1. Edit your `application/application.config.php` and add `ZFTool` to `modules` array.
+ 1. Edit your `config/application.config.php` and add `ZFTool` to `modules` array.
  1. Open console and try one of the following commands...
 
 ## Usage
