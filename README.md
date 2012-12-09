@@ -5,7 +5,7 @@
 
 ## Features
  * Class-map generator
- # List loaded modules
+ * Listing of loaded modules
 
 ## Requirements
  * Zend Framework 2.0.0 or later.
@@ -31,19 +31,13 @@
     zf.php modules [list]           show loaded modules
     zf.php version | --version      display current Zend Framework version
 
-### Configuration
-
-    zf.php config [list]                list all configuration options
-    zf.php config get <name>            display a single config value, i.e. "config get db.host"
-    zf.php config set <name> <value>    set a single config value (use only to change scalar values)
-
 ### Classmap generator
 
     zf.php classmap generate <directory> <classmap file> [--append|-a] [--overwrite|-w]
 
     <directory>         The directory to scan for PHP classes (use "." to use current directory)
-    <classmap file>     File name for generated class map file  or - for standard output.If not supplied, defaults to autoload_classmap.php inside
-                        <directory>.
+    <classmap file>     File name for generated class map file  or - for standard output. If not supplied, defaults to
+                        autoload_classmap.php inside <directory>.
     --append | -a       Append to classmap file if it exists
     --overwrite | -w    Whether or not to overwrite existing classmap file
 
@@ -51,4 +45,5 @@
  * Module maintenance (installation, configuration, removal etc.)
  * Inspection of application configuration.
  * Deploying zf2 skeleton applications.
+ * Reading and writing app configuration.
 
