@@ -1,20 +1,23 @@
   Zend Framework 2 Tool
 =========================
 
-**ZFTool** is an utility module for maintaining modular Zend Framework 2 applications. It currently provides
-the following functionality:
+**ZFTool** is an utility module for maintaining modular Zend Framework 2 applications.
 
 ## Features
  * Class-map generator
+ # List loaded modules
 
 ## Requirements
-
  * Zend Framework 2.0.0 or later.
  * PHP 5.3.3 or later.
  * Console access to the application being maintained (shell, command prompt)
 
-## Installation
- 
+## Installation using [Composer](http://getcomposer.org)
+ 1. Open console (command prompt)
+ 2. Go to your application's directory.
+ 2. Run `composer require zendframework/zftool:dev-master`
+
+## Manual installation
  1. Clone using `git` or [download zipball](https://github.com/zendframework/ZFTool/zipball/master).
  1. Extract to `vendor/ZFTool` in your ZF2 application
  1. Edit your `config/application.config.php` and add `ZFTool` to `modules` array.
