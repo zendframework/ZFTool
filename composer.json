@@ -1,11 +1,22 @@
 {
-    "name": "ZFTool",
+    "name": "zendframework/zftool",
+    "description": "Utility module for Zend Framework 2 applications.",
+    "keywords": [
+        "zf2",
+        "tool"
+    ],
+    "homepage": "http://framework.zend.com/",
     "repositories": [
         {
             "type": "composer",
             "url": "http://packages.zendframework.com/"
         }
     ],
+    "autoload": {
+        "psr-0": {
+            "ZFTool\\": "src/"
+        }
+    },
     "require": {
         "php": ">=5.3.3",
         "zendframework/zendframework": "2.*"
