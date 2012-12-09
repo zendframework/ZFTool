@@ -4,13 +4,12 @@
 **ZFTool** is an utility module for maintaining modular Zend Framework 2 applications. It currently provides
 the following functionality:
 
- * Module maintenance (installation, configuration, removal etc.)
- * Inspection of application configuration.
- * Deploying zf2 skeleton applications.
+## Features
+ * Class-map generator
 
 ## Requirements
 
- * Zend Framework 2.0.0 RC1 or later.
+ * Zend Framework 2.0.0 or later.
  * PHP 5.3.3 or later.
  * Console access to the application being maintained (shell, command prompt)
 
@@ -20,6 +19,7 @@ the following functionality:
  1. Extract to `vendor/ZFTool` in your ZF2 application
  1. Edit your `config/application.config.php` and add `ZFTool` to `modules` array.
  1. Open console and try one of the following commands...
+
 
 ## Usage
 
@@ -43,3 +43,9 @@ the following functionality:
                         <directory>.
     --append | -a       Append to classmap file if it exists
     --overwrite | -w    Whether or not to overwrite existing classmap file
+
+## Todo
+ * Module maintenance (installation, configuration, removal etc.)
+ * Inspection of application configuration.
+ * Deploying zf2 skeleton applications.
+
