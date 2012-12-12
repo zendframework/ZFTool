@@ -22,7 +22,7 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
 
     public function getConfig()
     {
-        return $this->config = include __DIR__ . '/config/module.config.php';
+        return $this->config = include __DIR__ . '/../../config/module.config.php';
     }
 
     public function getAutoloaderConfig()
