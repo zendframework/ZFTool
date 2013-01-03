@@ -1,0 +1,77 @@
+#!/usr/bin/env php
+<?php
+/**
+ * Create zf.phar
+ * 
+ * @link      http://github.com/zendframework/ZFTool for the canonical source repository
+ * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
+
+$srcRoot   = dirname(__DIR__);
+$buildRoot = __DIR__ ;
+$filename  = 'zftool.phar';
+
+if (file_exists($buildRoot . "/$filename")) {
+    unlink($buildRoot . "/$filename");
+}
+
+$phar = new \Phar($buildRoot . "/$filename", 0, $filename);
+$phar->startBuffering();
+
+addFile($phar, "$srcRoot/zf.php", $srcRoot);
+addDir($phar, "$srcRoot/vendor", $srcRoot);
+addDir($phar, "$srcRoot/config", $srcRoot);
+addDir($phar, "$srcRoot/src", $srcRoot);
+
+$stub = <<<EOF
+#!/usr/bin/env php
+<?php
+/*
+ * This file is part of ZFTool command line tool
+ *
+ * @link      http://github.com/zendframework/ZFTool for the canonical source repository
+ * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+ * @license   http://framework.zend.com/license/new-bsd New BSD License
+ */
+Phar::mapPhar('$filename');
+require 'phar://$filename/zf.php';
+__HALT_COMPILER();
+
+EOF;
+
+$phar->setStub($stub);
+$phar->stopBuffering();
+
+/**
+ * Add a directory in phar removing whitespaces from PHP source code
+ * 
+ * @param Phar $phar
+ * @param string $sDir 
+ */
+function addDir($phar, $sDir, $baseDir = null) {
+    $oDir = new RecursiveIteratorIterator (
+        new RecursiveDirectoryIterator ($sDir),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
+    foreach ($oDir as $sFile) {
+        if (preg_match ('/\\.php$/i', $sFile)) {
+            addFile($phar, $sFile, $baseDir);
+        }
+    }
+}
+
+/**
+ * Add a file in phar removing whitespaces from the file
+ * 
+ * @param Phar $phar
+ * @param string $sFile 
+ */
+function addFile($phar, $sFile, $baseDir = null) {
+    if (null !== $baseDir) {
+        $phar->addFromString(substr($sFile, strlen($baseDir) + 1), php_strip_whitespace($sFile));
+    } else {
+        $phar->addFromString($sFile, php_strip_whitespace($sFile));
+    }
+}

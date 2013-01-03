@@ -41,6 +41,17 @@
     --append | -a       Append to classmap file if it exists
     --overwrite | -w    Whether or not to overwrite existing classmap file
 
+### Compile the PHAR file
+
+You can create a .phar file containing the ZFTool project. In order to compile ZFTool in a .phar file you need
+to execute the following command:
+
+    bin/create-phar.php
+
+This command will create a zftool.phar file in th bin folder.
+You can use and ship only this file to execute all the ZFTool functionalities.
+
+
 ## Todo
  * Module maintenance (installation, configuration, removal etc.)
  * Inspection of application configuration.
