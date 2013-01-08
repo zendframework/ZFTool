@@ -16,7 +16,8 @@ if (file_exists($buildRoot . "/$filename")) {
     unlink($buildRoot . "/$filename");
 }
 
-$phar = new \Phar($buildRoot . "/$filename", 0, $filename);
+$pharPath = $buildRoot . "/$filename";
+$phar = new \Phar($pharPath, 0, $filename);
 $phar->startBuffering();
 
 addFile($phar, "$srcRoot/zf.php", $srcRoot);
@@ -42,6 +43,7 @@ EOF;
 
 $phar->setStub($stub);
 $phar->stopBuffering();
+chmod($pharPath, 0755);
 
 /**
  * Add a directory in phar removing whitespaces from PHP source code
