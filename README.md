@@ -48,7 +48,7 @@ to execute the following command:
 
     bin/create-phar.php
 
-This command will create a zftool.phar file in th bin folder.
+This command will create a zftool.phar file in the bin folder.
 You can use and ship only this file to execute all the ZFTool functionalities.
 
 
