@@ -17,6 +17,7 @@ return array(
             'ZFTool\Controller\Info'     => 'ZFTool\Controller\InfoController',
             'ZFTool\Controller\Module'   => 'ZFTool\Controller\ModuleController',
             'ZFTool\Controller\Classmap' => 'ZFTool\Controller\ClassmapController',
+            'ZFTool\Controller\Create'   => 'ZFTool\Controller\CreateController',
         ),
     ),
 
@@ -65,6 +66,24 @@ return array(
                         'defaults' => array(
                             'controller' => 'ZFTool\Controller\Module',
                             'action'     => 'list',
+                        ),
+                    ),
+                ),
+                'zftool-create-project' => array(
+                    'options' => array(
+                        'route'    => 'create project <path>',
+                        'defaults' => array(
+                            'controller' => 'ZFTool\Controller\Create',
+                            'action'     => 'project',
+                        ),
+                    ),
+                ),
+                'zftool-create-module' => array(
+                    'options' => array(
+                        'route'    => 'create module <name> [path]',
+                        'defaults' => array(
+                            'controller' => 'ZFTool\Controller\Create',
+                            'action'     => 'module',
                         ),
                     ),
                 ),

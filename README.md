@@ -2,10 +2,13 @@
 =========================
 
 **ZFTool** is an utility module for maintaining modular Zend Framework 2 applications.
+It runs from the command line and can be installed as ZF2 module or as PHAR (see below).
 
 ## Features
  * Class-map generator
  * Listing of loaded modules
+ * Create a new project (install the ZF2 skeleton application)
+ * Create a new module
 
 ## Requirements
  * Zend Framework 2.0.0 or later.
@@ -19,10 +22,9 @@
 
 ## Manual installation
  1. Clone using `git` or [download zipball](https://github.com/zendframework/ZFTool/zipball/master).
- 1. Extract to `vendor/ZFTool` in your ZF2 application
- 1. Edit your `config/application.config.php` and add `ZFTool` to `modules` array.
- 1. Open console and try one of the following commands...
-
+ 2. Extract to `vendor/ZFTool` in your ZF2 application
+ 3. Edit your `config/application.config.php` and add `ZFTool` to `modules` array.
+ 4. Open console and try one of the following commands...
 
 ## Usage
 
@@ -30,6 +32,19 @@
 
     zf.php modules [list]           show loaded modules
     zf.php version | --version      display current Zend Framework version
+
+### Project creation
+
+    zf.php create project <path>
+
+    <path>              The path of the project to be created
+
+### Module creation
+
+    zf-php create module <name> [path]
+
+    <name>              The name of the module to be created
+    path                The path to the root folder of the ZF2 application (optional)
 
 ### Classmap generator
 
@@ -46,15 +61,17 @@
 You can create a .phar file containing the ZFTool project. In order to compile ZFTool in a .phar file you need
 to execute the following command:
 
-    bin/create-phar.php
+    bin/create-phar
 
-This command will create a zftool.phar file in the bin folder.
+This command will create a *zftool.phar* file in the bin folder.
 You can use and ship only this file to execute all the ZFTool functionalities.
+After the *zftool.phar* creation, we suggest to add the folder bin of ZFTool in your PATH environment. In this
+way you can execute the *zftool.phar* script wherever you are.
 
 
 ## Todo
- * Module maintenance (installation, configuration, removal etc.)
- * Inspection of application configuration.
- * Deploying zf2 skeleton applications.
+ * Module maintenance (installation, configuration, removal etc.) [installation DONE]
+ * Inspection of application configuration. [DONE?]
+ * Deploying zf2 skeleton applications. [DONE]
  * Reading and writing app configuration.
 

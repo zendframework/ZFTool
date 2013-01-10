@@ -8,7 +8,7 @@ use Zend\Stdlib\ArrayUtils;
 use Zend\ServiceManager\Exception\ServiceNotFoundException;
 use Zend\View\Model\ConsoleModel;
 use Zend\Version;
-
+use Zend\Console\ColorInterface as Color;
 
 class ModuleController extends AbstractActionController
 {
@@ -17,15 +17,31 @@ class ModuleController extends AbstractActionController
         try{
             /* @var $mm \Zend\ModuleManager\ModuleManager */
             $mm = $sm->get('modulemanager');
-        }catch(ServiceNotFoundException $e){
-            $m = new ConsoleModel();
-            $m->setErrorLevel(1);
-            $m->setResult('Cannot get Zend\ModuleManager\ModuleManager instance. Is your application using it?');
-            return $m;
+        } catch(ServiceNotFoundException $e) {
+            return $this->sendError(
+                'Cannot get Zend\ModuleManager\ModuleManager instance. Is your application using it?'
+            );
         }
+        $console = $this->getServiceLocator()->get('console');
+        $modules = array_keys($mm->getLoadedModules(false));
+        $modules = array_diff($modules, array('ZFTool'));
 
-        return print_r(array_keys($mm->getLoadedModules(false)),true);
+        if (empty($modules)) {
+            $console->writeLine('No modules installed. Are you in the root folder of a ZF2 application?');
+            return;
+        }
+        $console->writeLine("Modules installed:");
+        foreach ($modules as $module) {
+            $console->writeLine($module, Color::GREEN);
+        }
     }
-
-
+    
+    private function sendError($msg)
+    {
+        $m = new ConsoleModel();
+        $m->setErrorLevel(2);
+        $m->setResult($msg . PHP_EOL);
+        return $m;
+    }
+    
 }

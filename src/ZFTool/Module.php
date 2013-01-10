@@ -10,6 +10,9 @@ use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
 
 class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterface, ConfigProviderInterface
 {
+    const VERSION = '0.1';
+    const NAME    = 'ZFTool - Zend Framework 2 command line Tool';
+    
     protected $config;
 
     public function onBootstrap($e)
@@ -36,6 +39,11 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
         );
     }
 
+    public function getConsoleBanner(ConsoleAdapterInterface $console)
+    {
+        return self::NAME . ' ver. ' . self::VERSION;
+    }
+    
     public function getConsoleUsage(ConsoleAdapterInterface $console){
         if(!empty($this->config->disableUsage)){
             return null; // usage information has been disabled
@@ -49,10 +57,19 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             'version | --version'         => 'display current Zend Framework version',
 
             'Application configuration:',
-            'config [list]'               => 'list all configuration options',
+            'config [list]'             => 'list all configuration options',
             'config get <name>'         => 'display a single config value, i.e. "config get db.host"',
             'config set <name> <value>' => 'set a single config value (use only to change scalar values)',
 
+            'Project creation:',
+            'create project <path>'     => 'create a skeleton application',
+            array('<path>', 'The path of the project to be created'),
+            
+            'Module creation:',
+            'create module <name> [path]'     => 'create a module',
+            array('<name>', 'The name of the module to be created'),
+            array('path', 'The path to the root folder of the ZF2 application'),
+            
             'Classmap generator:',
             'classmap generate <directory> <classmap file> [--append|-a] [--overwrite|-w]' => '',
             array('<directory>',        'The directory to scan for PHP classes (use "." to use current directory)'),
