@@ -3,7 +3,8 @@ namespace ZFTool\Model;
 
 use Zend\Code\Generator\ValueGenerator;
 
-class Skeleton {
+class Skeleton 
+{
     
     const SKELETON_URL    = 'https://github.com/zendframework/ZendSkeletonApplication/archive/master.zip';
     const API_LAST_COMMIT = 'https://api.github.com/repos/zendframework/ZendSkeletonApplication/commits?per_page=1';
@@ -25,6 +26,7 @@ class Skeleton {
         }
         return false;
     }
+    
     /**
      * Download the ZF2 Skeleton Application as .zip in a file
      * 
@@ -40,6 +42,7 @@ class Skeleton {
         }
         return false;
     }
+    
     /**
      * Get the most updated .zip skeleton file in $dir
      * 
@@ -58,6 +61,7 @@ class Skeleton {
         }
         return $file;
     }
+    
     /**
      * Get the .zip file name based on the last commit
      * 
@@ -73,6 +77,7 @@ class Skeleton {
         }
         return $filename;
     }
+    
     /**
      * Export the $config array in a human readable format
      * 
@@ -90,6 +95,7 @@ class Skeleton {
         
         return static::$valueGenerator;
     }
+    
     /**
      * Return the Module.php content
      * 
@@ -123,6 +129,7 @@ class Module
    
 EOD;
     }
+    
     /**
      *
      * @param type $name
