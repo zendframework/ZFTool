@@ -6,6 +6,7 @@ use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
 use Zend\View\Model\ConsoleModel;
 use ZFTool\Model\Skeleton;
+use ZFTool\Model\Utility;
 use Zend\Console\ColorInterface as Color;
 
 class CreateController extends AbstractActionController
@@ -50,12 +51,17 @@ class CreateController extends AbstractActionController
         $zip = new \ZipArchive;
         if ($zip->open($tmpFile)) { 
             if (!$zip->extractTo($tmpDir)) {
-                return $this->sendError(
-                    "Error during the unzip of $tmpFile. Consider to delete it and try again."
-                );
+                return $this->sendError("Error during the unzip of $tmpFile.");
             }
-            rename ($tmpDir . '/' . Skeleton::SKELETON_DIR, $path);
+            $tmpSkeleton = $tmpDir . '/' . Skeleton::SKELETON_DIR;
+            $result = Utility::copyFiles($tmpSkeleton, $path);
+            if (file_exists($tmpSkeleton)) {
+                Utility::deleteFolder($tmpSkeleton);
+            }
             $zip->close();
+            if (false === $result) {
+                return $this->sendError("Error during the copy of the files in $path.");
+            }
         }
         $console->writeLine("ZF2 skeleton application installed in $path.", Color::GREEN);
     }
@@ -77,6 +83,7 @@ class CreateController extends AbstractActionController
                 "The module $name already exists."
             );
         }
+        
         $name = ucfirst($name);
         mkdir("$path/module/$name");
         mkdir("$path/module/$name/config");
@@ -112,8 +119,14 @@ EOD;
         }
         $console->writeLine("The module $name has been created in module folder.", Color::GREEN);
     }
-
-    private function sendError($msg)
+    
+    /**
+     * Send an error message to the console
+     * 
+     * @param  string $msg
+     * @return ConsoleModel 
+     */
+    protected function sendError($msg)
     {
         $m = new ConsoleModel();
         $m->setErrorLevel(2);

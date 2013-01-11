@@ -6,6 +6,8 @@
  * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 

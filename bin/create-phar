@@ -43,7 +43,14 @@ EOF;
 
 $phar->setStub($stub);
 $phar->stopBuffering();
-chmod($pharPath, 0755);
+
+if (file_exists($pharPath)) {
+    echo "Phar created successfully in $pharPath\n";
+    chmod($pharPath, 0755);
+} else {
+    echo "Error during the compile of the Phar file $pharPath\n";
+    exit(2);
+}
 
 /**
  * Add a directory in phar removing whitespaces from PHP source code
