@@ -20,7 +20,7 @@ class CreateController extends AbstractActionController
         $console = $this->getServiceLocator()->get('console');
         $tmpDir  = sys_get_temp_dir();
         $request = $this->getRequest();
-        $path    = $request->getParam('path');
+        $path    = rtrim($request->getParam('path'), '/');
         
         if (file_exists($path)) {
             return $this->sendError (
@@ -63,7 +63,13 @@ class CreateController extends AbstractActionController
                 return $this->sendError("Error during the copy of the files in $path.");
             }
         }
+        if (file_exists("$path/composer.phar")) {
+            chmod("$path/composer.phar", 0755);
+        }
         $console->writeLine("ZF2 skeleton application installed in $path.", Color::GREEN);
+        $console->writeLine("In order to execute the skeleton application you need to install the ZF2 library.");
+        $console->writeLine("Execute: \"composer.phar install\" in $path");
+        $console->writeLine("For more info in $path/README.md");
     }
     
     public function moduleAction()
@@ -72,13 +78,18 @@ class CreateController extends AbstractActionController
         $tmpDir  = sys_get_temp_dir();
         $request = $this->getRequest();
         $name    = $request->getParam('name');
-        $path    = $request->getParam('path');
+        $path    = rtrim($request->getParam('path'), '/');
         
         if (empty($path)) {
             $path = '.';
         }
         
-        if (file_exists($path . '/module/' . $name)) {
+        if (!file_exists("$path/module") || !file_exists("$path/config/application.config.php")) {
+            return $this->sendError(
+                "The path $path doesn't contain a ZF2 application. I cannot create a module here."
+            );
+        }
+        if (file_exists("$path/module/$name")) {
             return $this->sendError(
                 "The module $name already exists."
             );
@@ -117,7 +128,11 @@ EOD;
             $content .= 'return '. Skeleton::exportConfig($application) . ";\n";
             file_put_contents("$path/config/application.config.php", $content);
         }
-        $console->writeLine("The module $name has been created in module folder.", Color::GREEN);
+        if ($path === '.') {
+            $console->writeLine("The module $name has been created", Color::GREEN);
+        } else {
+            $console->writeLine("The module $name has been created in $path", Color::GREEN);
+        }    
     }
     
     /**

@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /**
  * ZF2 command line tool

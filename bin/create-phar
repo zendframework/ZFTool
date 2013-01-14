@@ -20,7 +20,9 @@ $pharPath = $buildRoot . "/$filename";
 $phar = new \Phar($pharPath, 0, $filename);
 $phar->startBuffering();
 
-addFile($phar, "$srcRoot/zf.php", $srcRoot);
+// remove the first line in zf.php
+$phar->addFromString('zf.php', substr(php_strip_whitespace("$srcRoot/zf.php"), 19));
+
 addDir($phar, "$srcRoot/vendor", $srcRoot);
 addDir($phar, "$srcRoot/config", $srcRoot);
 addDir($phar, "$srcRoot/src", $srcRoot);
