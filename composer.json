@@ -22,6 +22,8 @@
         "zendframework/zend-mvc": ">=2.0.0",
         "zendframework/zend-modulemanager": ">=2.0.0",
         "zendframework/zend-console": ">=2.0.0",
+        "zendframework/zend-code": ">=2.0.0",
+        "zendframework/zend-config": ">=2.0.0",
         "zendframework/zend-view": ">=2.0.0",
         "zendframework/zend-stdlib": ">=2.0.0",
         "zendframework/zend-servicemanager": ">=2.0.0",
