@@ -11,9 +11,9 @@ use Zend\Console\ColorInterface as Color;
 
 class InstallController extends AbstractActionController
 {
-    
+
     public function zfAction()
-    {        
+    {
         if (!extension_loaded('zip')) {
             return $this->sendError('You need to install the ZIP extension of PHP');
         }
@@ -22,13 +22,13 @@ class InstallController extends AbstractActionController
         $request = $this->getRequest();
         $version = $request->getParam('version');
         $path    = rtrim($request->getParam('path'), '/');
-                
+
         if (file_exists($path)) {
             return $this->sendError (
                 "The directory $path already exists. You cannot install the ZF2 library here."
             );
         }
-        
+
         if (empty($version)) {
             $version = Zf::getLastVersion();
             if (false === $version) {
@@ -43,7 +43,7 @@ class InstallController extends AbstractActionController
                 );
             }
         }
-        
+
         $tmpFile = ZF::getTmpFileName($tmpDir, $version);
         if (!file_exists($tmpFile)) {
             if (!Zf::downloadZip($tmpFile, $version)) {
@@ -52,14 +52,14 @@ class InstallController extends AbstractActionController
                 );
             }
         }
-        
+
         $zip = new \ZipArchive;
-        if ($zip->open($tmpFile)) { 
-            $zipFolder = $tmpDir . '/' . rtrim($zip->statIndex(0)['name'], "/"); 
+        if ($zip->open($tmpFile)) {
+            $zipFolder = $tmpDir . '/' . rtrim($zip->statIndex(0)['name'], "/");
             if (!$zip->extractTo($tmpDir)) {
                 return $this->sendError("Error during the unzip of $tmpFile.");
             }
-            
+
             $result = Utility::copyFiles($zipFolder, $path);
             if (file_exists($zipFolder)) {
                 Utility::deleteFolder($zipFolder);
@@ -69,15 +69,15 @@ class InstallController extends AbstractActionController
                 return $this->sendError("Error during the copy of the files in $path.");
             }
         }
-        
+
         $console->writeLine("The ZF library $version has been installed in $path.", Color::GREEN);
     }
-       
+
     /**
      * Send an error message to the console
-     * 
+     *
      * @param  string $msg
-     * @return ConsoleModel 
+     * @return ConsoleModel
      */
     protected function sendError($msg)
     {

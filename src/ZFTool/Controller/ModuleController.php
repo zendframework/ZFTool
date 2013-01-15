@@ -12,7 +12,8 @@ use Zend\Console\ColorInterface as Color;
 
 class ModuleController extends AbstractActionController
 {
-    public function listAction(){
+    public function listAction()
+    {
         $sm = $this->getServiceLocator();
         try{
             /* @var $mm \Zend\ModuleManager\ModuleManager */
@@ -35,7 +36,7 @@ class ModuleController extends AbstractActionController
             $console->writeLine($module, Color::GREEN);
         }
     }
-    
+
     private function sendError($msg)
     {
         $m = new ConsoleModel();
@@ -43,5 +44,5 @@ class ModuleController extends AbstractActionController
         $m->setResult($msg . PHP_EOL);
         return $m;
     }
-    
+
 }

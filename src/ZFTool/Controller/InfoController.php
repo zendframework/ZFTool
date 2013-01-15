@@ -10,12 +10,12 @@ use Zend\Console\ColorInterface as Color;
 use ZFTool\Module;
 
 class InfoController extends AbstractActionController
-{   
-    
+{
+
     public function versionAction()
     {
         $console = $this->getServiceLocator()->get('console');
-        
+
         $zf2Path = $this->getZF2Path();
         if (file_exists($zf2Path . '/Zend/Version/Version.php')) {
             require_once $zf2Path . '/Zend/Version/Version.php';
@@ -28,10 +28,10 @@ class InfoController extends AbstractActionController
         $console->writeLine($msg . Version::VERSION);
     }
 
-    public function configAction(){
-        
+    public function configAction()
+    {
         $console = $this->getServiceLocator()->get('console');
-        
+
         $sm = $this->getServiceLocator();
         $config = $sm->get('Configuration');
 
@@ -44,7 +44,7 @@ class InfoController extends AbstractActionController
 
     protected function getZF2Path()
     {
-        if (getenv('ZF2_PATH')) { 
+        if (getenv('ZF2_PATH')) {
             return getenv('ZF2_PATH');
         } elseif (get_cfg_var('zf2_path')) {
             return get_cfg_var('zf2_path');

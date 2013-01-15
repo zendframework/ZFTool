@@ -3,18 +3,18 @@ namespace ZFTool\Model;
 
 use Zend\Code\Generator\ValueGenerator;
 
-class Skeleton 
+class Skeleton
 {
-    
+
     const SKELETON_URL    = 'https://github.com/zendframework/ZendSkeletonApplication/archive/master.zip';
     const API_LAST_COMMIT = 'https://api.github.com/repos/zendframework/ZendSkeletonApplication/commits?per_page=1';
     const SKELETON_FILE   = 'ZF2SA';
-    
+
     protected static $valueGenerator;
-    
+
     /**
      * Get the last commit data of the ZendSkeletonApplication github repository
-     * 
+     *
      * @return array|boolean
      */
     public static function getLastCommit()
@@ -25,10 +25,10 @@ class Skeleton
         }
         return false;
     }
-    
+
     /**
      * Download the ZF2 Skeleton Application as .zip in a file
-     * 
+     *
      * @param  string $file
      * @return boolean
      */
@@ -40,12 +40,12 @@ class Skeleton
         }
         return (file_put_contents($file, $content) !== false);
     }
-    
+
     /**
      * Get the most updated .zip skeleton file in $dir
-     * 
+     *
      * @param  string $dir
-     * @return string 
+     * @return string
      */
     public static function getLastZip($dir)
     {
@@ -59,13 +59,13 @@ class Skeleton
         }
         return $file;
     }
-    
+
     /**
      * Get the .zip file name based on the last commit
-     * 
+     *
      * @param  string $dir
      * @param  array $commit
-     * @return string 
+     * @return string
      */
     public static function getTmpFileName($dir, $commit)
     {
@@ -75,13 +75,13 @@ class Skeleton
         }
         return $filename;
     }
-    
+
     /**
      * Export the $config array in a human readable format
-     * 
+     *
      * @param  array $config
      * @param  integer $space the initial indentation value
-     * @return string 
+     * @return string
      */
     public static function exportConfig($config, $indent = 0)
     {
@@ -90,15 +90,15 @@ class Skeleton
         }
         static::$valueGenerator->setValue($config);
         static::$valueGenerator->setArrayDepth($indent);
-        
+
         return static::$valueGenerator;
     }
-    
+
     /**
      * Return the Module.php content
-     * 
+     *
      * @param  string $name
-     * @return string 
+     * @return string
      */
     public static function getModule($name)
     {
@@ -124,14 +124,14 @@ class Module
         );
     }
 }
-   
+
 EOD;
     }
-    
+
     /**
      *
      * @param type $name
-     * @return type 
+     * @return type
      */
     public static function getModuleConfig($name)
     {

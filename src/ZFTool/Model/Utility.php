@@ -8,10 +8,10 @@ class Utility
 {
     /**
      * Copy all files recursively from source to destination
-     * 
+     *
      * @param  string $source
      * @param  string $dest
-     * @return boolean 
+     * @return boolean
      */
     public static function copyFiles($source, $dest)
     {
@@ -42,12 +42,12 @@ class Utility
         }
         return true;
     }
-    
+
     /**
      * Delete a folder recursively from source to destination
-     * 
+     *
      * @param  string $source
-     * @return boolean 
+     * @return boolean
      */
     public static function deleteFolder($source)
     {
