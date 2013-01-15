@@ -41,10 +41,10 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
 
 ### Module creation
 
-    zf-php create module <name> [path]
+    zf.php create module <name> [<path>]
 
     <name>              The name of the module to be created
-    path                The path to the root folder of the ZF2 application (optional)
+    <path>              The path to the root folder of the ZF2 application (optional)
 
 ### Classmap generator
 
@@ -55,6 +55,13 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
                         autoload_classmap.php inside <directory>.
     --append | -a       Append to classmap file if it exists
     --overwrite | -w    Whether or not to overwrite existing classmap file
+
+### ZF library installation
+
+    zf.php install zf <path> [<version>]
+
+    <path>              The directory where to install the ZF2 library
+    <version>           The version to install, if not specified uses the last available
 
 ### Compile the PHAR file
 

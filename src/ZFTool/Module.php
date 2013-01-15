@@ -12,7 +12,7 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
 {
     const VERSION = '0.1';
     const NAME    = 'ZFTool - Zend Framework 2 command line Tool';
-    
+
     protected $config;
 
     public function onBootstrap($e)
@@ -43,8 +43,9 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
     {
         return self::NAME . ' ver. ' . self::VERSION;
     }
-    
-    public function getConsoleUsage(ConsoleAdapterInterface $console){
+
+    public function getConsoleUsage(ConsoleAdapterInterface $console)
+    {
         if(!empty($this->config->disableUsage)){
             return null; // usage information has been disabled
         }
@@ -64,20 +65,24 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             'Project creation:',
             'create project <path>'     => 'create a skeleton application',
             array('<path>', 'The path of the project to be created'),
-            
+
             'Module creation:',
             'create module <name> [<path>]'     => 'create a module',
             array('<name>', 'The name of the module to be created'),
             array('<path>', 'The root path of a ZF2 application where to create the module'),
-            
+
             'Classmap generator:',
             'classmap generate <directory> <classmap file> [--append|-a] [--overwrite|-w]' => '',
             array('<directory>',        'The directory to scan for PHP classes (use "." to use current directory)'),
             array('<classmap file>',    'File name for generated class map file  or - for standard output.'.
                                         'If not supplied, defaults to autoload_classmap.php inside <directory>.'),
             array('--append | -a',      'Append to classmap file if it exists'),
-            array('--overwrite | -w',   'Whether or not to overwrite existing classmap file')
+            array('--overwrite | -w',   'Whether or not to overwrite existing classmap file'),
 
+            'Zend Framework 2 installation:',
+            'install zf <path> [<version>]' => '',
+            array('<path>', 'The directory where to install the ZF2 library'),
+            array('<version>', 'The version to install, if not specified uses the last available'),
         );
     }
 }

@@ -11,9 +11,9 @@ use Zend\Console\ColorInterface as Color;
 
 class CreateController extends AbstractActionController
 {
-    
+
     public function projectAction()
-    {        
+    {
         if (!extension_loaded('zip')) {
             return $this->sendError('You need to install the ZIP extension of PHP');
         }
@@ -21,7 +21,7 @@ class CreateController extends AbstractActionController
         $tmpDir  = sys_get_temp_dir();
         $request = $this->getRequest();
         $path    = rtrim($request->getParam('path'), '/');
-        
+
         if (file_exists($path)) {
             return $this->sendError (
                 "The directory $path already exists. You cannot create a ZF2 project here."
@@ -41,19 +41,19 @@ class CreateController extends AbstractActionController
         } else {
             $tmpFile = Skeleton::getTmpFileName($tmpDir, $commit);
         }
-        
+
         if (!file_exists($tmpFile)) {
             if (!Skeleton::getSkeletonApp($tmpFile)) {
                 return $this->sendError('I cannot access the ZF2 skeleton application in github.');
             }
         }
-       
+
         $zip = new \ZipArchive;
-        if ($zip->open($tmpFile)) { 
+        if ($zip->open($tmpFile)) {
+            $tmpSkeleton = $tmpDir . '/' . rtrim($zip->statIndex(0)['name'], "/");
             if (!$zip->extractTo($tmpDir)) {
                 return $this->sendError("Error during the unzip of $tmpFile.");
             }
-            $tmpSkeleton = $tmpDir . '/' . Skeleton::SKELETON_DIR;
             $result = Utility::copyFiles($tmpSkeleton, $path);
             if (file_exists($tmpSkeleton)) {
                 Utility::deleteFolder($tmpSkeleton);
@@ -71,7 +71,7 @@ class CreateController extends AbstractActionController
         $console->writeLine("Execute: \"composer.phar install\" in $path");
         $console->writeLine("For more info in $path/README.md");
     }
-    
+
     public function moduleAction()
     {
         $console = $this->getServiceLocator()->get('console');
@@ -79,11 +79,11 @@ class CreateController extends AbstractActionController
         $request = $this->getRequest();
         $name    = $request->getParam('name');
         $path    = rtrim($request->getParam('path'), '/');
-        
+
         if (empty($path)) {
             $path = '.';
         }
-        
+
         if (!file_exists("$path/module") || !file_exists("$path/config/application.config.php")) {
             return $this->sendError(
                 "The path $path doesn't contain a ZF2 application. I cannot create a module here."
@@ -94,7 +94,7 @@ class CreateController extends AbstractActionController
                 "The module $name already exists."
             );
         }
-        
+
         $name = ucfirst($name);
         mkdir("$path/module/$name");
         mkdir("$path/module/$name/config");
@@ -102,15 +102,15 @@ class CreateController extends AbstractActionController
         mkdir("$path/module/$name/src/$name");
         mkdir("$path/module/$name/src/$name/Controller");
         mkdir("$path/module/$name/view");
-        
+
         // Create the Module.php
         file_put_contents("$path/module/$name/Module.php", Skeleton::getModule($name));
-        
+
         // Create the module.config.php
         file_put_contents("$path/module/$name/config/module.config.php", Skeleton::getModuleConfig($name));
-        
+
         // Add the module in application.config.php
-        $application = require "$path/config/application.config.php"; 
+        $application = require "$path/config/application.config.php";
         if (!in_array($name, $application['modules'])) {
             $application['modules'][] = $name;
             copy ("$path/config/application.config.php", "$path/config/application.config.old");
@@ -122,9 +122,9 @@ class CreateController extends AbstractActionController
  *
  * @see https://github.com/zendframework/ZFTool
  */
- 
+
 EOD;
-            
+
             $content .= 'return '. Skeleton::exportConfig($application) . ";\n";
             file_put_contents("$path/config/application.config.php", $content);
         }
@@ -132,14 +132,14 @@ EOD;
             $console->writeLine("The module $name has been created", Color::GREEN);
         } else {
             $console->writeLine("The module $name has been created in $path", Color::GREEN);
-        }    
+        }
     }
-    
+
     /**
      * Send an error message to the console
-     * 
+     *
      * @param  string $msg
-     * @return ConsoleModel 
+     * @return ConsoleModel
      */
     protected function sendError($msg)
     {
