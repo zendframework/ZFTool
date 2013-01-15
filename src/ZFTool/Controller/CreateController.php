@@ -50,10 +50,10 @@ class CreateController extends AbstractActionController
        
         $zip = new \ZipArchive;
         if ($zip->open($tmpFile)) { 
+            $tmpSkeleton = $tmpDir . '/' . rtrim($zip->statIndex(0)['name'], "/"); 
             if (!$zip->extractTo($tmpDir)) {
                 return $this->sendError("Error during the unzip of $tmpFile.");
             }
-            $tmpSkeleton = $tmpDir . '/' . Skeleton::SKELETON_DIR;
             $result = Utility::copyFiles($tmpSkeleton, $path);
             if (file_exists($tmpSkeleton)) {
                 Utility::deleteFolder($tmpSkeleton);

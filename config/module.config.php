@@ -18,6 +18,7 @@ return array(
             'ZFTool\Controller\Module'   => 'ZFTool\Controller\ModuleController',
             'ZFTool\Controller\Classmap' => 'ZFTool\Controller\ClassmapController',
             'ZFTool\Controller\Create'   => 'ZFTool\Controller\CreateController',
+            'ZFTool\Controller\Install'  => 'ZFTool\Controller\InstallController',
         ),
     ),
 
@@ -84,6 +85,15 @@ return array(
                         'defaults' => array(
                             'controller' => 'ZFTool\Controller\Create',
                             'action'     => 'module',
+                        ),
+                    ),
+                ),
+                'zftool-install-zf' => array(
+                    'options' => array(
+                        'route'    => 'install zf <path> [<version>]',
+                        'defaults' => array(
+                            'controller' => 'ZFTool\Controller\Install',
+                            'action'     => 'zf',
                         ),
                     ),
                 ),

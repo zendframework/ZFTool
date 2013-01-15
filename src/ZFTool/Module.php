@@ -76,8 +76,12 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             array('<classmap file>',    'File name for generated class map file  or - for standard output.'.
                                         'If not supplied, defaults to autoload_classmap.php inside <directory>.'),
             array('--append | -a',      'Append to classmap file if it exists'),
-            array('--overwrite | -w',   'Whether or not to overwrite existing classmap file')
+            array('--overwrite | -w',   'Whether or not to overwrite existing classmap file'),
 
+            'Zend Framework 2 installation:',
+            'install zf <path> [<version>]' => '',
+            array('<path>', 'The directory where to install the ZF2 library'),
+            array('<version>', 'The version to install, if not specified uses the last available'),
         );
     }
 }
