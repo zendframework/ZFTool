@@ -9,7 +9,6 @@ class Skeleton
     const SKELETON_URL    = 'https://github.com/zendframework/ZendSkeletonApplication/archive/master.zip';
     const API_LAST_COMMIT = 'https://api.github.com/repos/zendframework/ZendSkeletonApplication/commits?per_page=1';
     const SKELETON_FILE   = 'ZF2SA';
-    const SKELETON_DIR    = 'ZendSkeletonApplication-master';
     
     protected static $valueGenerator;
     
@@ -36,11 +35,10 @@ class Skeleton
     public static function getSkeletonApp($file)
     {
         $content = @file_get_contents(self::SKELETON_URL);
-        if (!empty($content)) {
-            file_put_contents($file, $content);
-            return true;
+        if (empty($content)) {
+            return false;
         }
-        return false;
+        return (file_put_contents($file, $content) !== false);
     }
     
     /**
