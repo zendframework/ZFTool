@@ -50,7 +50,8 @@ class CreateController extends AbstractActionController
 
         $zip = new \ZipArchive;
         if ($zip->open($tmpFile)) {
-            $tmpSkeleton = $tmpDir . '/' . rtrim($zip->statIndex(0)['name'], "/");
+            $stateIndex0 = $zip->statIndex(0);
+            $tmpSkeleton = $tmpDir . '/' . rtrim($stateIndex0['name'], "/");
             if (!$zip->extractTo($tmpDir)) {
                 return $this->sendError("Error during the unzip of $tmpFile.");
             }
