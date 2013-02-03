@@ -55,7 +55,8 @@ class InstallController extends AbstractActionController
 
         $zip = new \ZipArchive;
         if ($zip->open($tmpFile)) {
-            $zipFolder = $tmpDir . '/' . rtrim($zip->statIndex(0)['name'], "/");
+            $zipFolders = $zip->statIndex(0);
+            $zipFolder = $tmpDir . '/' . rtrim($zipFolders['name'], "/");
             if (!$zip->extractTo($tmpDir)) {
                 return $this->sendError("Error during the unzip of $tmpFile.");
             }
