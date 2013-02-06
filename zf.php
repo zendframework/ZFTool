@@ -10,10 +10,25 @@
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
-require_once __DIR__ . '/vendor/autoload.php';
+$basePath = __DIR__;
+if (file_exists("$basePath/vendor/autoload.php")) {
+    require_once "$basePath/vendor/autoload.php";
+} else {
+    $basePath = dirname(dirname($basePath));
+    chdir($basePath);
+    if (file_exists("init_autoloader.php")) {
+        require_once "init_autoloader.php";
+    } elseif (file_exists("vendor/autoload.php")) {
+        require_once "vendor/autoload.php";
+    } else {
+        echo 'Error: I cannot find the autoloader of the application.' . PHP_EOL;
+        echo "Check if $basePath contains a valid ZF2 application." . PHP_EOL;
+        exit(2);
+    }
+}
 
-if (file_exists('config/application.config.php')) {
-    $appConfig = require 'config/application.config.php';
+if (file_exists("$basePath/config/application.config.php")) {
+    $appConfig = require "$basePath/config/application.config.php";
     if (!isset($appConfig['modules']['ZFTool'])) {
         $appConfig['modules'][] = 'ZFTool';
     }
