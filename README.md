@@ -23,8 +23,12 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
 ## Manual installation
  1. Clone using `git` or [download zipball](https://github.com/zendframework/ZFTool/zipball/master).
  2. Extract to `vendor/ZFTool` in your ZF2 application
- 3. Edit your `config/application.config.php` and add `ZFTool` to `modules` array.
- 4. Open console and try one of the following commands...
+ 3. Enter the `vendor/ZFTool` folder and execute `zf.php` as reported below
+
+## Using the PHAR file (zftool.phar)
+
+ 1. Download the [zftool.phar from packages.zendframework.com](http://packages.zendframework.com/zftool.phar)
+ 2. Execute the `zftool.phar` with one of the options reported below (`zftool.phar` replace the `zf.php`)
 
 ## Usage
 
