@@ -31,5 +31,6 @@
         "zendframework/zend-loader": ">=2.0.0",
         "zendframework/zend-version": ">=2.0.0",
         "zendframework/zend-text": ">=2.0.0"
-    }
+    },
+    "bin": ["zf.php"],
 }
