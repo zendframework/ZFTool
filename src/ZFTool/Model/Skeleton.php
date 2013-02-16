@@ -19,7 +19,7 @@ class Skeleton
      */
     public static function getLastCommit()
     {
-        $content = json_decode(file_get_contents(self::API_LAST_COMMIT, false, self::getContextProxy()), true);
+        $content = json_decode(@file_get_contents(self::API_LAST_COMMIT, false, self::getContextProxy()), true);
         if (is_array($content)) {
             return $content[0];
         }
@@ -34,7 +34,7 @@ class Skeleton
      */
     public static function getSkeletonApp($file)
     {
-        $content = file_get_contents(self::SKELETON_URL, false, self::getContextProxy());
+        $content = @file_get_contents(self::SKELETON_URL, false, self::getContextProxy());
         if (empty($content)) {
             return false;
         }
@@ -142,11 +142,12 @@ return array(
 EOD;
     }
 
-    public static function getContextProxy(){
+    public static function getContextProxy()
+    {
         
         $proxyURL = getenv('HTTP_PROXY');
 
-        if($proxyURL){
+        if($proxyURL) {
             $config_env = explode('@', $proxyURL);
 
             $auth = base64_encode(str_replace('http://', '', $config_env[0]));
