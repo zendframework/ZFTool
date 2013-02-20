@@ -17,6 +17,9 @@ class CreateController extends AbstractActionController
         if (!extension_loaded('zip')) {
             return $this->sendError('You need to install the ZIP extension of PHP');
         }
+        if (!extension_loaded('openssl')) {
+            return $this->sendError('You need to install the OpenSSL extension of PHP');
+        }
         $console = $this->getServiceLocator()->get('console');
         $tmpDir  = sys_get_temp_dir();
         $request = $this->getRequest();
