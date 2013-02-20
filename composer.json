@@ -6,6 +6,7 @@
         "tool"
     ],
     "homepage": "http://framework.zend.com/",
+    "license": "BSD-3-Clause",
     "repositories": [
         {
             "type": "composer",
@@ -31,5 +32,6 @@
         "zendframework/zend-loader": ">=2.0.0",
         "zendframework/zend-version": ">=2.0.0",
         "zendframework/zend-text": ">=2.0.0"
-    }
+    },
+    "bin": ["zf.php"]
 }
