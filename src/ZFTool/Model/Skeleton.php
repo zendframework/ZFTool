@@ -142,25 +142,32 @@ return array(
 EOD;
     }
 
+    /**
+     * Get stream context for proxy, if necessary
+     * 
+     * @return null|resource
+     */
     public static function getContextProxy()
     {
         
         $proxyURL = getenv('HTTP_PROXY');
 
-        if($proxyURL) {
-            $config_env = explode('@', $proxyURL);
-
-            $auth = base64_encode(str_replace('http://', '', $config_env[0]));
-
-            $aContext = array(
-                'http' => array(
-                    'proxy' => 'tcp://' . $config_env[1],
-                    'request_fulluri' => true,
-                    'header' => "Proxy-Authorization: Basic $auth",
-                ),
-            );
-
-            return stream_context_create($aContext);   
+        if (!$proxyURL) {
+            return;
         }
+
+        $config_env = explode('@', $proxyURL);
+
+        $auth = base64_encode(str_replace('http://', '', $config_env[0]));
+
+        $aContext = array(
+            'http' => array(
+                'proxy' => 'tcp://' . $config_env[1],
+                'request_fulluri' => true,
+                'header' => "Proxy-Authorization: Basic $auth",
+            ),
+        );
+
+        return stream_context_create($aContext);   
     }
 }
