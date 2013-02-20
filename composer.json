@@ -6,6 +6,7 @@
         "tool"
     ],
     "homepage": "http://framework.zend.com/",
+    "license": "BSD-3-Clause",
     "repositories": [
         {
             "type": "composer",
