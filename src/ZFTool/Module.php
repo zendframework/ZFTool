@@ -12,7 +12,6 @@ use Zend\ServiceManager\ServiceLocatorInterface;
 
 class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterface, ConfigProviderInterface
 {
-    const VERSION = '0.1';
     const NAME    = 'ZFTool - Zend Framework 2 command line Tool';
 
     /**
@@ -43,7 +42,7 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
 
     public function getConsoleBanner(ConsoleAdapterInterface $console)
     {
-        return self::NAME . ' ver. ' . self::VERSION;
+        return self::NAME;
     }
 
     public function getConsoleUsage(ConsoleAdapterInterface $console)
