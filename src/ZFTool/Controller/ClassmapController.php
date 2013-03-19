@@ -35,6 +35,8 @@ class ClassmapController extends AbstractActionController
             return $m;
         }
 
+        $directory = realpath($directory);
+
         // Determine output file name
         $output = $request->getParam('destination', $directory . '/autoload_classmap.php');
         if ('-' == $output) {
