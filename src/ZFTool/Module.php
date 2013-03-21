@@ -2,12 +2,12 @@
 
 namespace ZFTool;
 
+use Zend\EventManager\EventInterface;
 use Zend\Mvc\ModuleRouteListener;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
-use Zend\Mvc\MvcEvent;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterface, ConfigProviderInterface
@@ -19,7 +19,7 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
      */
     protected $sm;
 
-    public function onBootstrap(MvcEvent $e)
+    public function onBootstrap(EventInterface $e)
     {
         $this->sm = $e->getApplication()->getServiceManager();
     }
@@ -47,7 +47,8 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
 
     public function getConsoleUsage(ConsoleAdapterInterface $console)
     {
-        if(!empty($this->sm->get('config')['ZFTool']['disable_usage'])){
+        $config = $this->sm->get('config');
+        if(!empty($config['ZFTool']) && !empty($config['ZFTool']['disable_usage'])){
             return null; // usage information has been disabled
         }
 
