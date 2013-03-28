@@ -1,0 +1,185 @@
+<?php
+namespace ZFTool\Diagnostics;
+
+
+use Zend\EventManager\EventManagerInterface;
+use Zend\EventManager\ListenerAggregateInterface;
+
+class RunListener implements ListenerAggregateInterface
+{
+    /**
+     * @var \Zend\Stdlib\CallbackHandler[]
+     */
+    protected $listeners = array();
+
+    /**
+     * Attach listeners to an event manager
+     *
+     * @param  EventManagerInterface $events
+     * @return void
+     */
+    public function attach(EventManagerInterface $events)
+    {
+        $this->listeners[] = $events->attach(RunEvent::EVENT_RUN, array($this, 'onRun'));
+    }
+
+    /**
+     * Detach listeners from an event manager
+     *
+     * @param  EventManagerInterface $events
+     * @return void
+     */
+    public function detach(EventManagerInterface $events)
+    {
+        foreach ($this->listeners as $index => $listener) {
+            if ($events->detach($listener)) {
+                unset($this->listeners[$index]);
+            }
+        }
+    }
+
+    /**
+     * Listen to the "dispatch" event
+     *
+     * @param  MvcEvent $e
+     * @return mixed
+     */
+    public function onDispatch(MvcEvent $e)
+    {
+        $routeMatch       = $e->getRouteMatch();
+        $controllerName   = $routeMatch->getParam('controller', 'not-found');
+        $application      = $e->getApplication();
+        $events           = $application->getEventManager();
+        $controllerLoader = $application->getServiceManager()->get('ControllerLoader');
+
+        if (!$controllerLoader->has($controllerName)) {
+            $return = $this->marshallControllerNotFoundEvent($application::ERROR_CONTROLLER_NOT_FOUND, $controllerName, $e, $application);
+            return $this->complete($return, $e);
+        }
+
+        try {
+            $controller = $controllerLoader->get($controllerName);
+        } catch (InvalidControllerException $exception) {
+            $return = $this->marshallControllerNotFoundEvent($application::ERROR_CONTROLLER_INVALID, $controllerName, $e, $application, $exception);
+            return $this->complete($return, $e);
+        } catch (\Exception $exception) {
+            $return = $this->marshallBadControllerEvent($controllerName, $e, $application, $exception);
+            return $this->complete($return, $e);
+        }
+
+        $request  = $e->getRequest();
+        $response = $application->getResponse();
+
+        if ($controller instanceof InjectApplicationEventInterface) {
+            $controller->setEvent($e);
+        }
+
+        try {
+            $return = $controller->dispatch($request, $response);
+        } catch (\Exception $ex) {
+            $e->setError($application::ERROR_EXCEPTION)
+                ->setController($controllerName)
+                ->setControllerClass(get_class($controller))
+                ->setParam('exception', $ex);
+            $results = $events->trigger(MvcEvent::EVENT_DISPATCH_ERROR, $e);
+            $return = $results->last();
+            if (! $return) {
+                $return = $e->getResult();
+            }
+        }
+
+        return $this->complete($return, $e);
+    }
+
+    /**
+     * @param MvcEvent $e
+     */
+    public function reportMonitorEvent(MvcEvent $e)
+    {
+        $error     = $e->getError();
+        $exception = $e->getParam('exception');
+        if ($exception instanceof \Exception) {
+            zend_monitor_custom_event_ex($error, $exception->getMessage(), 'Zend Framework Exception', array('code' => $exception->getCode(), 'trace' => $exception->getTraceAsString()));
+        }
+    }
+
+    /**
+     * Complete the dispatch
+     *
+     * @param  mixed $return
+     * @param  MvcEvent $event
+     * @return mixed
+     */
+    protected function complete($return, MvcEvent $event)
+    {
+        if (!is_object($return)) {
+            if (ArrayUtils::hasStringKeys($return)) {
+                $return = new ArrayObject($return, ArrayObject::ARRAY_AS_PROPS);
+            }
+        }
+        $event->setResult($return);
+        return $return;
+    }
+
+    /**
+     * Marshall a controller not found exception event
+     *
+     * @param  string $type
+     * @param  string $controllerName
+     * @param  MvcEvent $event
+     * @param  Application $application
+     * @param  \Exception $exception
+     * @return mixed
+     */
+    protected function marshallControllerNotFoundEvent(
+        $type,
+        $controllerName,
+        MvcEvent $event,
+        Application $application,
+        \Exception $exception = null
+    ) {
+        $event->setError($type)
+            ->setController($controllerName)
+            ->setControllerClass('invalid controller class or alias: ' . $controllerName);
+        if ($exception !== null) {
+            $event->setParam('exception', $exception);
+        }
+
+        $events  = $application->getEventManager();
+        $results = $events->trigger(MvcEvent::EVENT_DISPATCH_ERROR, $event);
+        $return  = $results->last();
+        if (! $return) {
+            $return = $event->getResult();
+        }
+        return $return;
+    }
+
+    /**
+     * Marshall a bad controller exception event
+     *
+     * @param  string $controllerName
+     * @param  MvcEvent $event
+     * @param  Application $application
+     * @param  \Exception $exception
+     * @return mixed
+     */
+    protected function marshallBadControllerEvent(
+        $controllerName,
+        MvcEvent $event,
+        Application $application,
+        \Exception $exception
+    ) {
+        $event->setError($application::ERROR_EXCEPTION)
+            ->setController($controllerName)
+            ->setParam('exception', $exception);
+
+        $events  = $application->getEventManager();
+        $results = $events->trigger(MvcEvent::EVENT_DISPATCH_ERROR, $event);
+        $return  = $results->last();
+        if (! $return) {
+            $return = $event->getResult();
+        }
+
+        return $return;
+    }
+}
