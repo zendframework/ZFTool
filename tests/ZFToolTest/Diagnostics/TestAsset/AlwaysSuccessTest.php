@@ -7,7 +7,7 @@ use ZFTool\Diagnostics\Test\TestInterface;
 
 class AlwaysSuccessTest implements TestInterface
 {
-    protected $label;
+    protected $label = 'Always Successful Test';
 
     public function run()
     {

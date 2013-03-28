@@ -2,8 +2,14 @@
 namespace ZFTool\Diagnostics;
 
 
+use ZFTool\Diagnostics\Result\Failure;
+use ZFTool\Diagnostics\Result\ResultInterface;
+use ZFTool\Diagnostics\Result\Success;
+use ZFTool\Diagnostics\Result\Warning;
 use Zend\EventManager\EventManagerInterface;
-use Zend\EventManager\ListenerAggregateInterface;
+use Zend\EventManager\ListenerAggregateInterface;;
+use Zend\Stdlib\ErrorHandler;
+use ErrorException;
 
 class RunListener implements ListenerAggregateInterface
 {
@@ -38,148 +44,95 @@ class RunListener implements ListenerAggregateInterface
         }
     }
 
-    /**
-     * Listen to the "dispatch" event
-     *
-     * @param  MvcEvent $e
-     * @return mixed
-     */
-    public function onDispatch(MvcEvent $e)
+    public function onRun(RunEvent $e)
     {
-        $routeMatch       = $e->getRouteMatch();
-        $controllerName   = $routeMatch->getParam('controller', 'not-found');
-        $application      = $e->getApplication();
-        $events           = $application->getEventManager();
-        $controllerLoader = $application->getServiceManager()->get('ControllerLoader');
-
-        if (!$controllerLoader->has($controllerName)) {
-            $return = $this->marshallControllerNotFoundEvent($application::ERROR_CONTROLLER_NOT_FOUND, $controllerName, $e, $application);
-            return $this->complete($return, $e);
-        }
+        /* @var $test \ZFTool\Diagnostics\Test\TestInterface */
+        $test = $e->getTarget();
 
         try {
-            $controller = $controllerLoader->get($controllerName);
-        } catch (InvalidControllerException $exception) {
-            $return = $this->marshallControllerNotFoundEvent($application::ERROR_CONTROLLER_INVALID, $controllerName, $e, $application, $exception);
-            return $this->complete($return, $e);
-        } catch (\Exception $exception) {
-            $return = $this->marshallBadControllerEvent($controllerName, $e, $application, $exception);
-            return $this->complete($return, $e);
+            ErrorHandler::start();
+            $result = $test->run();
+            ErrorHandler::stop(true);
+
+        } catch (ErrorException $e) {
+            return new Failure(
+                'PHP ' . static::getSeverityDescription($e->getSeverity()) . ': ' . $e->getMessage(),
+                $e
+            );
+        } catch (\Exception $e) {
+            return new Failure(
+                'Uncaught ' . get_class($e) . ': ' . $e->getMessage(),
+                $e
+            );
         }
 
-        $request  = $e->getRequest();
-        $response = $application->getResponse();
-
-        if ($controller instanceof InjectApplicationEventInterface) {
-            $controller->setEvent($e);
-        }
-
-        try {
-            $return = $controller->dispatch($request, $response);
-        } catch (\Exception $ex) {
-            $e->setError($application::ERROR_EXCEPTION)
-                ->setController($controllerName)
-                ->setControllerClass(get_class($controller))
-                ->setParam('exception', $ex);
-            $results = $events->trigger(MvcEvent::EVENT_DISPATCH_ERROR, $e);
-            $return = $results->last();
-            if (! $return) {
-                $return = $e->getResult();
+        // Check result
+        if (is_object($result)) {
+            if ($result instanceof ResultInterface) {
+                return $result;
+            } else {
+                return new Failure(
+                    'Test returned unknown object ' . get_class($result)
+                );
             }
-        }
+        } elseif (is_bool($result)) {
+            if ($result) {
+                return new Success();
+            } else {
+                return new Failure();
 
-        return $this->complete($return, $e);
-    }
-
-    /**
-     * @param MvcEvent $e
-     */
-    public function reportMonitorEvent(MvcEvent $e)
-    {
-        $error     = $e->getError();
-        $exception = $e->getParam('exception');
-        if ($exception instanceof \Exception) {
-            zend_monitor_custom_event_ex($error, $exception->getMessage(), 'Zend Framework Exception', array('code' => $exception->getCode(), 'trace' => $exception->getTraceAsString()));
-        }
-    }
-
-    /**
-     * Complete the dispatch
-     *
-     * @param  mixed $return
-     * @param  MvcEvent $event
-     * @return mixed
-     */
-    protected function complete($return, MvcEvent $event)
-    {
-        if (!is_object($return)) {
-            if (ArrayUtils::hasStringKeys($return)) {
-                $return = new ArrayObject($return, ArrayObject::ARRAY_AS_PROPS);
             }
+        } elseif (is_scalar($result)) {
+            return new Warning((string)$result);
+        } else {
+            return new Failure(
+                'Test returned ' . gettype($result)
+            );
         }
-        $event->setResult($return);
-        return $return;
     }
 
     /**
-     * Marshall a controller not found exception event
+     * Convert PHP error severity INT to name.
      *
-     * @param  string $type
-     * @param  string $controllerName
-     * @param  MvcEvent $event
-     * @param  Application $application
-     * @param  \Exception $exception
-     * @return mixed
+     * @param integer $severity
+     * @return string
      */
-    protected function marshallControllerNotFoundEvent(
-        $type,
-        $controllerName,
-        MvcEvent $event,
-        Application $application,
-        \Exception $exception = null
-    ) {
-        $event->setError($type)
-            ->setController($controllerName)
-            ->setControllerClass('invalid controller class or alias: ' . $controllerName);
-        if ($exception !== null) {
-            $event->setParam('exception', $exception);
+    public static function getSeverityDescription($severity)
+    {
+        switch ($severity) {
+            case E_ERROR: // 1 //
+                return 'ERROR';
+            case E_WARNING: // 2 //
+                return 'WARNING';
+            case E_PARSE: // 4 //
+                return 'PARSE';
+            case E_NOTICE: // 8 //
+                return 'NOTICE';
+            case E_CORE_ERROR: // 16 //
+                return 'CORE_ERROR';
+            case E_CORE_WARNING: // 32 //
+                return 'CORE_WARNING';
+            case E_COMPILE_ERROR: // 64 //
+                return 'COMPILE_ERROR';
+            case E_COMPILE_WARNING: // 128 //
+                return 'COMPILE_WARNING';
+            case E_USER_ERROR: // 256 //
+                return 'USER_ERROR';
+            case E_USER_WARNING: // 512 //
+                return 'USER_WARNING';
+            case E_USER_NOTICE: // 1024 //
+                return 'USER_NOTICE';
+            case E_STRICT: // 2048 //
+                return 'STRICT';
+            case E_RECOVERABLE_ERROR: // 4096 //
+                return 'RECOVERABLE_ERROR';
+            case E_DEPRECATED: // 8192 //
+                return 'DEPRECATED';
+            case E_USER_DEPRECATED: // 16384 //
+                return 'USER_DEPRECATED';
+            default:
+                return 'error severity ' . $severity;
         }
-
-        $events  = $application->getEventManager();
-        $results = $events->trigger(MvcEvent::EVENT_DISPATCH_ERROR, $event);
-        $return  = $results->last();
-        if (! $return) {
-            $return = $event->getResult();
-        }
-        return $return;
     }
 
-    /**
-     * Marshall a bad controller exception event
-     *
-     * @param  string $controllerName
-     * @param  MvcEvent $event
-     * @param  Application $application
-     * @param  \Exception $exception
-     * @return mixed
-     */
-    protected function marshallBadControllerEvent(
-        $controllerName,
-        MvcEvent $event,
-        Application $application,
-        \Exception $exception
-    ) {
-        $event->setError($application::ERROR_EXCEPTION)
-            ->setController($controllerName)
-            ->setParam('exception', $exception);
-
-        $events  = $application->getEventManager();
-        $results = $events->trigger(MvcEvent::EVENT_DISPATCH_ERROR, $event);
-        $return  = $results->last();
-        if (! $return) {
-            $return = $event->getResult();
-        }
-
-        return $return;
-    }
 }

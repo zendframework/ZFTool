@@ -49,7 +49,7 @@ class BasicConsole extends AbstractReporter
         $result = $e->getLastResult();
 
         // Draw a symbol
-        if($result instanceof Success) {
+        if ($result instanceof Success) {
             $this->console->write('.', Color::GREEN);
         } elseif ($result instanceof Failure) {
             $this->console->write('F', Color::WHITE, Color::RED);
@@ -65,8 +65,8 @@ class BasicConsole extends AbstractReporter
         if ($this->gutter > 0 && $this->pos > $this->width - $this->gutter) {
             $this->console->write(
                 str_pad(
-                    str_pad($this->iter, $this->countLength, ' ', STR_PAD_LEFT).' / '. $this->total .
-                    ' (' . str_pad(round($this->iter / $this->total * 100), 3, ' ', STR_PAD_LEFT). '%)'
+                    str_pad($this->iter, $this->countLength, ' ', STR_PAD_LEFT) . ' / ' . $this->total .
+                    ' (' . str_pad(round($this->iter / $this->total * 100), 3, ' ', STR_PAD_LEFT) . '%)'
                     , $this->gutter, ' ', STR_PAD_LEFT
                 )
             );
@@ -82,50 +82,71 @@ class BasicConsole extends AbstractReporter
     {
         /* @var $results \ZFTool\Diagnostics\Result\Collection */
         $results = $e->getParam('results');
-        $this->console->writeLine('');
-        $this->console->writeLine('');
+        $this->console->writeLine();
+        $this->console->writeLine();
 
         // Display a summary line
         if ($results->getFailureCount() == 0 && $results->getWarningCount() == 0) {
             $line = 'OK (' . $this->total . ' diagnostic tests)';
             $this->console->writeLine(
-                str_pad($line, $this->width, ' ', STR_PAD_RIGHT),
+                str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::GREEN
             );
         } elseif ($results->getFailureCount() == 0) {
-            $line = $results->getWarningCount() . ' warnings!';
-            $line .= ' ' . $results->getSuccessCount() . ' successful tests.';
+            $line = $results->getWarningCount() . ' warnings, ';
+            $line .= $results->getSuccessCount() . ' successful tests.';
             $this->console->writeLine(
-                str_pad($line, $this->width, ' ', STR_PAD_RIGHT),
+                str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::YELLOW
             );
         } else {
-            $line = $results->getFailureCount() . ' failures!';
-            $line .= ' ' . $results->getWarningCount() . ' warnings.';
-            $line .= ' ' . $results->getSuccessCount() . ' successful tests.';
+            $line = $results->getFailureCount() . ' failures, ';
+            $line .= $results->getWarningCount() . ' warnings, ';
+            $line .= $results->getSuccessCount() . ' successful tests.';
+
             $this->console->writeLine(
-                str_pad($line, $this->width, ' ', STR_PAD_RIGHT),
+                str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
+                Color::NORMAL, Color::YELLOW
+            );
+        }
+
+        if ($results->getUnknownCount() > 0) {
+            $line = $results->getUnknownCount() . ' unknown test results.';
+            $this->console->writeLine(
+                str_pad($line, $this->width - 1, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::RED
             );
         }
 
+        $this->console->writeLine();
+
         // Display a list of failures and warnings
-        foreach($results as $test => $result) {
+        foreach ($results as $test) {
             /* @var $test \ZFTool\Diagnostics\Test\TestInterface */
             /* @var $result \ZFTool\Diagnostics\Result\ResultInterface */
+            $result = $results[$test];
 
-            if($result instanceof Failure) {
-                $this->console->writeLine('Failure: '.$test->getLabel(), Color::RED);
+            if ($result instanceof Failure) {
+                $this->console->writeLine('Failure: ' . $test->getLabel(), Color::RED);
                 $message = $result->getMessage();
                 if ($message) {
                     $this->console->writeLine($message);
                 }
-            }elseif($result instanceof Warning ) {
-                $this->console->writeLine('Warning: '.$test->getLabel(), Color::YELLOW);
+                $this->console->writeLine();
+            } elseif ($result instanceof Warning) {
+                $this->console->writeLine('Warning: ' . $test->getLabel(), Color::YELLOW);
                 $message = $result->getMessage();
                 if ($message) {
                     $this->console->writeLine($message);
                 }
+                $this->console->writeLine();
+            } elseif (!$result instanceof Success) {
+                $this->console->writeLine('Unknown result ' . get_class($result) . ': ' . $test->getLabel(), Color::YELLOW);
+                $message = $result->getMessage();
+                if ($message) {
+                    $this->console->writeLine($message);
+                }
+                $this->console->writeLine();
             }
         }
 

@@ -6,8 +6,10 @@ use ZFTool\Diagnostics\Result\Failure;
 use ZFTool\Diagnostics\Result\Success;
 use ZFTool\Diagnostics\Result\Warning;
 use ZFToolTest\Diagnostics\TestAsset\AlwaysSuccessTest;
+use ZFToolTest\Diagnostics\TestAssets\UnknownResult;
 
 require_once __DIR__.'/TestAsset/AlwaysSuccessTest.php';
+require_once __DIR__.'/TestAsset/UnknownResult.php';
 
 class ResultCollectionTest extends \PHPUnit_Framework_TestCase
 {
@@ -48,8 +50,8 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
 
     public function testClassCapabilities()
     {
-        $this->assertInstanceOf('ArrayObject', $this->collection);
         $this->assertInstanceOf('Traversable', $this->collection);
+        $this->assertInstanceOf('Iterator', $this->collection);
     }
 
     public function testBasicGettingAndSetting()
@@ -120,6 +122,7 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $this->collection->getSuccessCount());
         $this->assertEquals(0, $this->collection->getWarningCount());
         $this->assertEquals(0, $this->collection->getFailureCount());
+        $this->assertEquals(0, $this->collection->getUnknownCount());
 
         $success1 = new Success();
         $test1 = new AlwaysSuccessTest();
@@ -127,6 +130,7 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->collection->getSuccessCount());
         $this->assertEquals(0, $this->collection->getWarningCount());
         $this->assertEquals(0, $this->collection->getFailureCount());
+        $this->assertEquals(0, $this->collection->getUnknownCount());
 
         $success2 = new Success();
         $test2 = new AlwaysSuccessTest();
@@ -134,6 +138,7 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $this->collection->getSuccessCount());
         $this->assertEquals(0, $this->collection->getWarningCount());
         $this->assertEquals(0, $this->collection->getFailureCount());
+        $this->assertEquals(0, $this->collection->getUnknownCount());
 
         $failure1 = new Failure();
         $test3 = new AlwaysSuccessTest();
@@ -141,6 +146,7 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $this->collection->getSuccessCount());
         $this->assertEquals(0, $this->collection->getWarningCount());
         $this->assertEquals(1, $this->collection->getFailureCount());
+        $this->assertEquals(0, $this->collection->getUnknownCount());
 
         $warning1 = new Warning();
         $test4 = new AlwaysSuccessTest();
@@ -148,17 +154,28 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $this->collection->getSuccessCount());
         $this->assertEquals(1, $this->collection->getWarningCount());
         $this->assertEquals(1, $this->collection->getFailureCount());
+        $this->assertEquals(0, $this->collection->getUnknownCount());
+
+        $unknown = new UnknownResult();
+        $test5 = new AlwaysSuccessTest();
+        $this->collection[$test5] = $unknown;
+        $this->assertEquals(2, $this->collection->getSuccessCount());
+        $this->assertEquals(1, $this->collection->getWarningCount());
+        $this->assertEquals(1, $this->collection->getFailureCount());
+        $this->assertEquals(1, $this->collection->getUnknownCount());
 
         $failure2 = new Failure();
         $this->collection[$test2] = $failure2;
         $this->assertEquals(1, $this->collection->getSuccessCount());
         $this->assertEquals(1, $this->collection->getWarningCount());
         $this->assertEquals(2, $this->collection->getFailureCount());
+        $this->assertEquals(1, $this->collection->getUnknownCount());
 
         unset($this->collection[$test4]);
         $this->assertEquals(1, $this->collection->getSuccessCount());
         $this->assertEquals(0, $this->collection->getWarningCount());
         $this->assertEquals(2, $this->collection->getFailureCount());
+        $this->assertEquals(1, $this->collection->getUnknownCount());
 
     }
 
@@ -168,15 +185,18 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $test = $result = null;
 
         for($x = 0; $x < 10; $x++){
-            $tests[] = $test = new AlwaysSuccessTest();
-            $results[] = $result = new Success();
+            $test     = new AlwaysSuccessTest();
+            $result   = new Success();
+            $tests[]  = $test;
+            $results[]= $result;
             $this->collection[$test] = $result;
         }
 
         $x = 0;
-        foreach($this->collection as $test => $result){
+        $this->collection->rewind();
+        foreach($this->collection as $test){
             $this->assertSame($tests[$x], $test);
-            $this->assertSame($results[$x], $result);
+            $this->assertSame($results[$x], $this->collection[$test]);
             $x++;
         }
     }

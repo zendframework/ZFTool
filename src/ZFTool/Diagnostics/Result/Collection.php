@@ -4,11 +4,12 @@ namespace ZFTool\Diagnostics\Result;
 use ZFTool\Diagnostics\Exception\InvalidArgumentException;
 use ZFTool\Diagnostics\Test\TestInterface;
 
-class Collection extends \ArrayIterator
+class Collection extends \SplObjectStorage
 {
     protected $countSuccess = 0;
     protected $countWarning = 0;
     protected $countFailure = 0;
+    protected $countUnknown = 0;
     protected $objMap = array();
 
     /**
@@ -41,95 +42,87 @@ class Collection extends \ArrayIterator
         return $this->countWarning;
     }
 
+    /**
+     * Get number of unknown results.
+     *
+     * @return int
+     */
+    public function getUnknownCount()
+    {
+        return $this->countUnknown;
+    }
+
     public function offsetGet($index)
     {
-        $index = $this->validateIndex($index);
+        $this->validateIndex($index);
+
         return parent::offsetGet($index);
     }
 
     public function offsetExists($index)
     {
-        $index = $this->validateIndex($index);
+        $this->validateIndex($index);
+
         return parent::offsetExists($index);
     }
 
     public function offsetSet($index, $testResult)
     {
         $indexObj = $index;
-        $index = $this->validateIndex($index);
-        $testResult = $this->validateValue($testResult);
+        $this->validateIndex($index);
+        $this->validateValue($testResult);
 
         // Decrement counters when replacing existing item
-        if(parent::offsetExists($index)) {
+        if (parent::offsetExists($index)) {
             $oldResult = parent::offsetGet($index);
-            if($oldResult instanceof Success) {
+            if ($oldResult instanceof Success) {
                 $this->countSuccess--;
-            }elseif($oldResult instanceof Failure) {
+            } elseif ($oldResult instanceof Failure) {
                 $this->countFailure--;
-            }elseif($oldResult instanceof Warning) {
+            } elseif ($oldResult instanceof Warning) {
                 $this->countWarning--;
+            } else {
+                $this->countUnknown--;
             }
         }
-
-        // store a reference to test in internal map for future iteration
-        $this->objMap[$index] = $indexObj;
 
         parent::offsetSet($index, $testResult);
 
         // Increment counters
-        if($testResult instanceof Success) {
+        if ($testResult instanceof Success) {
             $this->countSuccess++;
-        }elseif($testResult instanceof Failure) {
+        } elseif ($testResult instanceof Failure) {
             $this->countFailure++;
-        }elseif($testResult  instanceof Warning) {
+        } elseif ($testResult  instanceof Warning) {
             $this->countWarning++;
+        } else {
+            $this->countUnknown++;
         }
     }
 
     public function offsetUnset($index)
     {
-        $index = $this->validateIndex($index);
+        $this->validateIndex($index);
 
         // Decrement counters when replacing existing item
-        if(parent::offsetExists($index)) {
+        if (parent::offsetExists($index)) {
             $oldResult = parent::offsetGet($index);
-            if($oldResult instanceof Success) {
+            if ($oldResult instanceof Success) {
                 $this->countSuccess--;
-            }elseif($oldResult instanceof Failure) {
+            } elseif ($oldResult instanceof Failure) {
                 $this->countFailure--;
-            }elseif($oldResult instanceof Warning) {
+            } elseif ($oldResult instanceof Warning) {
                 $this->countWarning--;
+            } else {
+                $this->countUnknown--;
             }
         }
 
         parent::offsetUnset($index);
     }
 
-    public function exchangeArray($array)
-    {
-        // Validate each element in the target array
-        foreach($array as $test => $testResult)
-        {
-            $this->validateIndex($test);
-            $this->validateValue($testResult);
-        }
-
-        return parent::exchangeArray($array);
-    }
-
-    public function key()
-    {
-        return $this->objMap[parent::key()];
-    }
-
-    public function seek($position)
-    {
-        $position = $this->validateIndex($position);
-        parent::seek($position);
-    }
-
     /**
-     * Convert an object to a hash that can be queried in the collection.
+     * Validate index object.
      *
      * @param mixed $index
      * @return string
@@ -140,11 +133,11 @@ class Collection extends \ArrayIterator
         if (!is_object($index) || !$index instanceof TestInterface) {
             $what = is_object($index) ? 'object of type ' . get_class($index) : gettype($index);
             throw new InvalidArgumentException(
-                'Cannot use '. $what.' as index for this collection. Expected instance of TestInterface.'
+                'Cannot use ' . $what . ' as index for this collection. Expected instance of TestInterface.'
             );
         }
 
-        return spl_object_hash($index);
+        return $index;
     }
 
     /**
@@ -156,10 +149,10 @@ class Collection extends \ArrayIterator
      */
     protected function validateValue($testResult)
     {
-        if(!is_object($testResult) || !$testResult instanceof ResultInterface) {
+        if (!is_object($testResult) || !$testResult instanceof ResultInterface) {
             $what = is_object($testResult) ? 'object of type ' . get_class($testResult) : gettype($testResult);
             throw new InvalidArgumentException(
-                'This collection cannot hold '  .$what. ' Expected instance of ' . __NAMESPACE__ . '\ResultInterface'
+                'This collection cannot hold ' . $what . ' Expected instance of ' . __NAMESPACE__ . '\ResultInterface'
             );
         }
 

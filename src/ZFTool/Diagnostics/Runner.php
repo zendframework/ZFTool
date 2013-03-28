@@ -43,7 +43,7 @@ class Runner
         // Add default run listener
         $listenerClass = $this->getConfig()->getDefaultRunListenerClass();
         if ($listenerClass) {
-            $this->eventManager->attachAggregate(new $listenerClass());
+            $this->getEventManager()->attachAggregate(new $listenerClass());
         }
     }
 
