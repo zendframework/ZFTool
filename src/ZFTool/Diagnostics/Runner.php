@@ -11,6 +11,7 @@ use Zend\EventManager\Event;
 use Zend\EventManager\EventManager;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
+use ArrayObject;
 
 class Runner
 {
@@ -27,9 +28,9 @@ class Runner
     /**
      * An array of tests to run
      *
-     * @var array
+     * @var ArrayObject
      */
-    protected $tests = array();
+    protected $tests;
 
     public function __construct(ConfigInterface $config = null)
     {
@@ -39,6 +40,7 @@ class Runner
         }
 
         $this->config = $config;
+        $this->tests = new ArrayObject();
 
         // Add default run listener
         $listenerClass = $this->getConfig()->getDefaultRunListenerClass();
@@ -91,7 +93,7 @@ class Runner
 
             // Stop testing on first failure
             if ($breakOnFailure && $result instanceof Failure) {
-                $em->trigger(RunEvent::EVENT_STOP);
+                $em->trigger(RunEvent::EVENT_STOP, $testRun);
                 break;
             }
 
@@ -99,7 +101,7 @@ class Runner
             $afterRun = $em->trigger(RunEvent::EVENT_AFTER_RUN, $testRun);
             if ($afterRun->stopped() || $afterRun->contains(false)) {
                 $em->trigger(RunEvent::EVENT_STOP, $testRun);
-                continue;
+                break;
             }
         }
 
@@ -186,7 +188,7 @@ class Runner
     }
 
     /**
-     * @return array
+     * @return ArrayObject
      */
     public function getTests()
     {

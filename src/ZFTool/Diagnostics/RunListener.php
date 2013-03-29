@@ -14,6 +14,14 @@ use ErrorException;
 class RunListener implements ListenerAggregateInterface
 {
     /**
+     * Severity of error that will result in a test failing. Defaults to:
+     *  E_WARNING|E_PARSE|E_USER_ERROR|E_USER_WARNING|E_RECOVERABLE_ERROR
+     *
+     * @var int
+     */
+    protected $catchErrorSeverity = 4870;
+
+    /**
      * @var \Zend\Stdlib\CallbackHandler[]
      */
     protected $listeners = array();
@@ -50,7 +58,7 @@ class RunListener implements ListenerAggregateInterface
         $test = $e->getTarget();
 
         try {
-            ErrorHandler::start();
+            ErrorHandler::start($this->getCatchErrorSeverity());
             $result = $test->run();
             ErrorHandler::stop(true);
 
@@ -60,36 +68,61 @@ class RunListener implements ListenerAggregateInterface
                 $e
             );
         } catch (\Exception $e) {
+            ErrorHandler::stop(false);
             return new Failure(
                 'Uncaught ' . get_class($e) . ': ' . $e->getMessage(),
                 $e
             );
         }
 
-        // Check result
+        // Check if we've received a Result object
         if (is_object($result)) {
             if ($result instanceof ResultInterface) {
                 return $result;
             } else {
                 return new Failure(
-                    'Test returned unknown object ' . get_class($result)
+                    'Test returned unknown object ' . get_class($result),
+                    $result
                 );
             }
+
+        // Interpret boolean as a failure or success
         } elseif (is_bool($result)) {
             if ($result) {
                 return new Success();
             } else {
                 return new Failure();
-
             }
+
+        // Convert scalars to a warning
         } elseif (is_scalar($result)) {
             return new Warning((string)$result);
+
+        // Otherwise interpret as failure
         } else {
             return new Failure(
-                'Test returned ' . gettype($result)
+                'Test returned unknown result of type ' . gettype($result),
+                $result
             );
         }
     }
+
+    /**
+     * Get the minimal PHP error severity level at which errors will be interpreted as test failure.
+     *
+     * @param integer $minErrorSeverity
+     */
+    public function setCatchErrorSeverity($minErrorSeverity)
+    {
+        $this->catchErrorSeverity = $minErrorSeverity;
+    }
+
+    public function getCatchErrorSeverity()
+    {
+        return $this->catchErrorSeverity;
+    }
+
+
 
     /**
      * Convert PHP error severity INT to name.
