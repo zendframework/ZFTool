@@ -3,6 +3,7 @@ namespace ZFTool\Diagnostics\Reporter;
 
 use ArrayObject;
 use ZFTool\Diagnostics\RunEvent;
+use ZFToolTest\Diagnostics\TestAssets\UnknownResult;
 use Zend\EventManager\EventManagerInterface;
 use Zend\EventManager\ListenerAggregateInterface;
 
@@ -60,7 +61,9 @@ abstract class AbstractReporter implements ListenerAggregateInterface
      * @param  RunEvent $e
      * @return mixed
      */
-    public function onRun(RunEvent $e){}
+    public function onRun(RunEvent $e){
+        return new UnknownResult();
+    }
 
     /**
      * @param  RunEvent $e
@@ -79,7 +82,4 @@ abstract class AbstractReporter implements ListenerAggregateInterface
      * @return mixed
      */
     public function onStop(RunEvent $e){}
-
-
-
 }

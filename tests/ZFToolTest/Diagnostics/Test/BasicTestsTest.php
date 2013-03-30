@@ -65,4 +65,67 @@ class BasicTestsTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('ZFTool\Diagnostics\Result\Failure', $test->run());
     }
 
+    public function testPhpVersionArray()
+    {
+        $test = new PhpVersion(array(PHP_VERSION));      // default operator
+        $this->assertInstanceOf('ZFTool\Diagnostics\Result\Success', $test->run());
+
+        $test = new PhpVersion(array(
+            '1.0.0',
+            '1.1.0',
+            '1.1.1',
+        ), '<'); // explicit less than
+        $this->assertInstanceOf('ZFTool\Diagnostics\Result\Failure', $test->run());
+
+        $test = new PhpVersion(new \ArrayObject(array(
+            '40.0.0',
+            '41.0.0',
+            '42.0.0',
+        )), '<'); // explicit less than
+        $this->assertInstanceOf('ZFTool\Diagnostics\Result\Success', $test->run());
+
+        $test = new PhpVersion(new \ArrayObject(array(
+            '41.0.0',
+            PHP_VERSION,
+        )), '!='); // explicit less than
+        $this->assertInstanceOf('ZFTool\Diagnostics\Result\Failure', $test->run());
+
+    }
+
+    public function testPhpVersionInvalidVersion()
+    {
+        $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
+        new PhpVersion(new \stdClass());
+    }
+
+    public function testPhpVersionInvalidVersion2()
+    {
+        $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
+        new PhpVersion(fopen('php://memory', 'r'));
+    }
+
+    public function testPhpVersionInvalidOperator()
+    {
+        $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
+        new PhpVersion('1.0.0', array());
+    }
+
+    public function testPhpVersionInvalidOperator2()
+    {
+        $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
+        new PhpVersion('1.0.0', 'like');
+    }
+
+    public function testClassExistsInvalidArgument()
+    {
+        $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
+        new ClassExists(new \stdClass);
+    }
+
+    public function testClassExistsInvalidArgument2()
+    {
+        $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
+        new ClassExists(15);
+    }
+
 }

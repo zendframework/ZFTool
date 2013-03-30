@@ -101,4 +101,10 @@ return array(
         ),
     ),
 
+    'diagnostics' => array(
+        'ZF' => array(
+            'PHP Version' => array('ZFTool\Diagnostics\Test\PhpVersion', '5.3.3'),
+        )
+    )
+
 );

@@ -10,6 +10,7 @@ use ZFTool\Diagnostics\Result\Warning;
 use ZFTool\Diagnostics\RunEvent;
 use ZFToolTest\Diagnostics\TestAsset\AlwaysSuccessTest;
 use ZFToolTest\Diagnostics\TestAssets\ConsoleAdapter;
+use ZFToolTest\Diagnostics\TestAssets\DummyReporter;
 use ZFToolTest\Diagnostics\TestAssets\UnknownResult;
 use Zend\Console\Charset\Ascii;
 use Zend\EventManager\EventManager;
@@ -44,6 +45,11 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         $this->em->attachAggregate($this->reporter);
     }
 
+    public function testDummyReporter()
+    {
+        $reporter = new DummyReporter();
+
+    }
     public function testConsoleSettingGetting()
     {
         $this->assertSame($this->console, $this->reporter->getConsole());

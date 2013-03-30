@@ -54,6 +54,25 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Iterator', $this->collection);
     }
 
+    public function testBasicTypesData()
+    {
+        $test = new Success('foo','bar');
+        $this->assertEquals('foo', $test->getMessage());
+        $this->assertEquals('bar', $test->getData());
+
+        $test = new Warning('foo','bar');
+        $this->assertEquals('foo', $test->getMessage());
+        $this->assertEquals('bar', $test->getData());
+
+        $test = new Failure('foo','bar');
+        $this->assertEquals('foo', $test->getMessage());
+        $this->assertEquals('bar', $test->getData());
+
+        $test = new UnknownResult('foo','bar');
+        $this->assertEquals('foo', $test->getMessage());
+        $this->assertEquals('bar', $test->getData());
+    }
+
     public function testBasicGettingAndSetting()
     {
         $test = new AlwaysSuccessTest();
@@ -176,6 +195,44 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, $this->collection->getWarningCount());
         $this->assertEquals(2, $this->collection->getFailureCount());
         $this->assertEquals(1, $this->collection->getUnknownCount());
+
+        unset($this->collection[$test2]);
+        $this->assertEquals(1, $this->collection->getSuccessCount());
+        $this->assertEquals(0, $this->collection->getWarningCount());
+        $this->assertEquals(1, $this->collection->getFailureCount());
+        $this->assertEquals(1, $this->collection->getUnknownCount());
+
+        unset($this->collection[$test5]);
+        $this->assertEquals(1, $this->collection->getSuccessCount());
+        $this->assertEquals(0, $this->collection->getWarningCount());
+        $this->assertEquals(1, $this->collection->getFailureCount());
+        $this->assertEquals(0, $this->collection->getUnknownCount());
+
+        $this->collection[$test1] = $unknown;
+        $this->assertEquals(0, $this->collection->getSuccessCount());
+        $this->assertEquals(0, $this->collection->getWarningCount());
+        $this->assertEquals(1, $this->collection->getFailureCount());
+        $this->assertEquals(1, $this->collection->getUnknownCount());
+
+        $this->collection[$test3] = $warning1;
+        $this->assertEquals(0, $this->collection->getSuccessCount());
+        $this->assertEquals(1, $this->collection->getWarningCount());
+        $this->assertEquals(0, $this->collection->getFailureCount());
+        $this->assertEquals(1, $this->collection->getUnknownCount());
+
+        $this->collection[$test3] = $success1;
+        $this->assertEquals(1, $this->collection->getSuccessCount());
+        $this->assertEquals(0, $this->collection->getWarningCount());
+        $this->assertEquals(0, $this->collection->getFailureCount());
+        $this->assertEquals(1, $this->collection->getUnknownCount());
+
+        $this->collection[$test1] = $success2;
+        $this->assertEquals(2, $this->collection->getSuccessCount());
+        $this->assertEquals(0, $this->collection->getWarningCount());
+        $this->assertEquals(0, $this->collection->getFailureCount());
+        $this->assertEquals(0, $this->collection->getUnknownCount());
+
+
 
     }
 

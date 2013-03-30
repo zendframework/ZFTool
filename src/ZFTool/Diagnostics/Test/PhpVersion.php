@@ -6,7 +6,10 @@ use ZFTool\Diagnostics\Result\Failure;
 use ZFTool\Diagnostics\Result\Success;
 
 /**
- * Validate PHP version
+ * Validate PHP version.
+ *
+ * This test accepts a single version and an operator or an array of
+ * versions to test for.
  *
  * @package ZFTool\Diagnostics\Test
  */
@@ -23,19 +26,33 @@ class PhpVersion extends AbstractTest implements TestInterface {
     protected $operator;
 
     /**
-     * @param string $expectedVersion   The expected version
-     * @param string $operator  One of: <, lt, <=, le, >, gt, >=, ge, ==, =, eq, !=, <>, ne
+     *
+     * @param string|array|\Traversable   $expectedVersion  The expected version
+     * @param string                      $operator         One of: <, lt, <=, le, >, gt, >=, ge, ==, =, eq, !=, <>, ne
      * @throws \ZFTool\Diagnostics\Exception\InvalidArgumentException
      */
     public function __construct($expectedVersion, $operator = '>=')
     {
-        if (!is_scalar($expectedVersion)) {
-            throw new InvalidArgumentException(
-                'Expected version as a string, got '.gettype($expectedVersion)
-            );
-        }
+        if (is_object($expectedVersion)) {
+            if(!$expectedVersion instanceof \Traversable) {
+                throw new InvalidArgumentException(
+                    'Expected version number as string, array or traversable, got '.get_class($expectedVersion)
+                );
+            }
+            $this->version = $expectedVersion;
 
-        $this->version = (string)$expectedVersion;
+        } elseif (!is_scalar($expectedVersion)) {
+            if (!is_array($expectedVersion)) {
+                throw new InvalidArgumentException(
+                    'Expected version number as string, array or traversable, got '.gettype($expectedVersion)
+                );
+            }
+
+            $this->version = $expectedVersion;
+
+        } else {
+            $this->version = array($expectedVersion);
+        }
 
         if (!is_scalar($operator)) {
             throw new InvalidArgumentException(
@@ -57,10 +74,11 @@ class PhpVersion extends AbstractTest implements TestInterface {
 
     public function run()
     {
-        if (version_compare(PHP_VERSION, $this->version, $this->operator)) {
-            return new Success('Current PHP version is ' . PHP_VERSION, PHP_VERSION);
-        } else {
-            return new Failure('Current PHP version ' . PHP_VERSION, PHP_VERSION);
+        foreach ($this->version as $version ) {
+            if (!version_compare(PHP_VERSION, $version, $this->operator)) {
+                return new Failure('Current PHP version ' . PHP_VERSION, PHP_VERSION);
+            }
         }
+        return new Success('Current PHP version is ' . PHP_VERSION, PHP_VERSION);
     }
 }

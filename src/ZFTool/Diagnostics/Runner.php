@@ -168,6 +168,16 @@ class Runner
     }
 
     /**
+     * Remove previously attached reporter.
+     *
+     * @param ListenerAggregateInterface $reporter
+     */
+    public function removeReporter(ListenerAggregateInterface $reporter)
+    {
+        $this->getEventManager()->detachAggregate($reporter);
+    }
+
+    /**
      * @param \Zend\EventManager\EventManagerInterface $em
      */
     public function setEventManager(EventManagerInterface $em)
