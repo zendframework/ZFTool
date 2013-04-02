@@ -1,9 +1,9 @@
 <?php
-namespace ZFToolTest\Diagnostics\TestAssets;
+namespace ZFTool\Diagnostics\Result;
 
 use ZFTool\Diagnostics\Result\ResultInterface;
 
-class UnknownResult implements ResultInterface {
+class Unknown implements ResultInterface {
     /**
      * @var null|string
      */

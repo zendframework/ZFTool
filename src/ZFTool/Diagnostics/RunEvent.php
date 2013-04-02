@@ -38,7 +38,7 @@ class RunEvent extends Event
     /**
      * @param \ZFTool\Diagnostics\Result\Collection $resultCollection
      */
-    public function setResults($resultCollection)
+    public function setResults(Collection $resultCollection)
     {
         $this->results = $resultCollection;
     }

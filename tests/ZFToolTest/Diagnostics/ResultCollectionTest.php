@@ -5,11 +5,10 @@ use ZFTool\Diagnostics\Result\Collection;
 use ZFTool\Diagnostics\Result\Failure;
 use ZFTool\Diagnostics\Result\Success;
 use ZFTool\Diagnostics\Result\Warning;
+use ZFTool\Diagnostics\Result\Unknown;
 use ZFToolTest\Diagnostics\TestAsset\AlwaysSuccessTest;
-use ZFToolTest\Diagnostics\TestAssets\UnknownResult;
 
 require_once __DIR__.'/TestAsset/AlwaysSuccessTest.php';
-require_once __DIR__.'/TestAsset/UnknownResult.php';
 
 class ResultCollectionTest extends \PHPUnit_Framework_TestCase
 {
@@ -68,7 +67,7 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('foo', $test->getMessage());
         $this->assertEquals('bar', $test->getData());
 
-        $test = new UnknownResult('foo','bar');
+        $test = new Unknown('foo','bar');
         $this->assertEquals('foo', $test->getMessage());
         $this->assertEquals('bar', $test->getData());
     }
@@ -175,7 +174,7 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, $this->collection->getFailureCount());
         $this->assertEquals(0, $this->collection->getUnknownCount());
 
-        $unknown = new UnknownResult();
+        $unknown = new Unknown();
         $test5 = new AlwaysSuccessTest();
         $this->collection[$test5] = $unknown;
         $this->assertEquals(2, $this->collection->getSuccessCount());

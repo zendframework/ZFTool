@@ -5,20 +5,19 @@ namespace ZFToolTest\Diagnostics\Reporter;
 use ZFTool\Diagnostics\Result\Failure;
 use ZFTool\Diagnostics\Result\Success;
 use ZFTool\Diagnostics\Result\Warning;
+use ZFTool\Diagnostics\Result\Unknown;
 use ZFTool\Diagnostics\RunEvent;
 use ZFTool\Diagnostics\RunListener;
 use ZFToolTest\Diagnostics\TestAsset\ReturnThisTest;
 use ZFToolTest\Diagnostics\TestAsset\ThrowExceptionTest;
 use ZFToolTest\Diagnostics\TestAsset\TriggerUserErrorTest;
 use ZFToolTest\Diagnostics\TestAsset\TriggerWarningTest;
-use ZFToolTest\Diagnostics\TestAssets\UnknownResult;
 use Zend\EventManager\EventManager;
 
 require_once __DIR__.'/TestAsset/ReturnThisTest.php';
 require_once __DIR__.'/TestAsset/ThrowExceptionTest.php';
 require_once __DIR__.'/TestAsset/TriggerUserErrorTest.php';
 require_once __DIR__.'/TestAsset/TriggerWarningTest.php';
-require_once __DIR__.'/TestAsset/UnknownResult.php';
 
 class RunListenerTest extends \PHPUnit_Framework_TestCase
 {
@@ -76,7 +75,7 @@ class RunListenerTest extends \PHPUnit_Framework_TestCase
         $result = $this->em->trigger(RunEvent::EVENT_RUN, $e)->last();
         $this->assertSame($expectedResult, $result);
 
-        $expectedResult = new UnknownResult();
+        $expectedResult = new Unknown();
         $test = new ReturnThisTest($expectedResult);
         $e->setTarget($test);
         $result = $this->em->trigger(RunEvent::EVENT_RUN, $e)->last();
@@ -115,7 +114,7 @@ class RunListenerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('100000', $result->getMessage());
     }
 
-    public function testInterpretUnknownResultAsFailure()
+    public function testInterpretUnknownAsFailure()
     {
         $e = new RunEvent();
 

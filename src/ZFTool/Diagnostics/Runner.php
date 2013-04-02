@@ -77,7 +77,13 @@ class Runner
             }
 
             // Run the test!
-            $result = $em->trigger(RunEvent::EVENT_RUN, $testRun)->last();
+            $result = $em->trigger(RunEvent::EVENT_RUN, $testRun, function($r){
+                if($r instanceof ResultInterface) {
+                    return true;
+                } else {
+                    return false;
+                }
+            })->last();
 
             // Interpret result
             if (!is_object($result) || !$result instanceof ResultInterface) {

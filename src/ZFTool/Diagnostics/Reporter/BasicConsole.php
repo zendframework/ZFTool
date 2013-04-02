@@ -7,6 +7,7 @@ use ZFTool\Diagnostics\Result\Warning;
 use ZFTool\Diagnostics\RunEvent;
 use Zend\Console\Adapter\AdapterInterface as Console;
 use Zend\Console\ColorInterface as Color;
+use Zend\Stdlib\StringUtils;
 
 class BasicConsole extends AbstractReporter
 {
@@ -81,12 +82,12 @@ class BasicConsole extends AbstractReporter
     public function onFinish(RunEvent $e)
     {
         /* @var $results \ZFTool\Diagnostics\Result\Collection */
-        $results = $e->getParam('results');
+        $results = $e->getResults();
         $this->console->writeLine();
         $this->console->writeLine();
 
         // Display a summary line
-        if ($results->getFailureCount() == 0 && $results->getWarningCount() == 0) {
+        if ($results->getFailureCount() == 0 && $results->getWarningCount() == 0 && $results->getUnknownCount() == 0) {
             $line = 'OK (' . $this->total . ' diagnostic tests)';
             $this->console->writeLine(
                 str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
@@ -94,7 +95,14 @@ class BasicConsole extends AbstractReporter
             );
         } elseif ($results->getFailureCount() == 0) {
             $line = $results->getWarningCount() . ' warnings, ';
-            $line .= $results->getSuccessCount() . ' successful tests.';
+            $line .= $results->getSuccessCount() . ' successful tests';
+
+            if ($results->getUnknownCount() > 0) {
+                $line .= ', ' . $results->getUnknownCount() . ' unknown test results';
+            }
+
+            $line .= '.';
+
             $this->console->writeLine(
                 str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::YELLOW
@@ -102,18 +110,16 @@ class BasicConsole extends AbstractReporter
         } else {
             $line = $results->getFailureCount() . ' failures, ';
             $line .= $results->getWarningCount() . ' warnings, ';
-            $line .= $results->getSuccessCount() . ' successful tests.';
+            $line .= $results->getSuccessCount() . ' successful tests';
+
+            if ($results->getUnknownCount() > 0) {
+                $line .= ', ' . $results->getUnknownCount() . ' unknown test results';
+            }
+
+            $line .= '.';
 
             $this->console->writeLine(
-                str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
-                Color::NORMAL, Color::YELLOW
-            );
-        }
-
-        if ($results->getUnknownCount() > 0) {
-            $line = $results->getUnknownCount() . ' unknown test results.';
-            $this->console->writeLine(
-                str_pad($line, $this->width - 1, ' ', STR_PAD_RIGHT),
+                str_pad($line, $this->width, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::RED
             );
         }

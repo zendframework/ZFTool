@@ -5,6 +5,7 @@ use ZFTool\Diagnostics\Config;
 use ZFTool\Diagnostics\Reporter\BasicConsole;
 use ZFTool\Diagnostics\Result\Failure;
 use ZFTool\Diagnostics\Result\Success;
+use ZFTool\Diagnostics\Result\Unknown;
 use ZFTool\Diagnostics\Result\Warning;
 use ZFTool\Diagnostics\RunEvent;
 use ZFTool\Diagnostics\Runner;
@@ -14,14 +15,14 @@ use ZFToolTest\Diagnostics\TestAsset\ThrowExceptionTest;
 use ZFToolTest\Diagnostics\TestAsset\TriggerUserErrorTest;
 use ZFToolTest\Diagnostics\TestAsset\TriggerWarningTest;
 use ZFToolTest\Diagnostics\TestAssets\ConsoleAdapter;
-use ZFToolTest\Diagnostics\TestAssets\UnknownResult;
 use Zend\EventManager\EventManager;
 
 require_once __DIR__.'/TestAsset/ReturnThisTest.php';
 require_once __DIR__.'/TestAsset/ThrowExceptionTest.php';
 require_once __DIR__.'/TestAsset/TriggerUserErrorTest.php';
 require_once __DIR__.'/TestAsset/TriggerWarningTest.php';
-require_once __DIR__.'/TestAsset/UnknownResult.php';
+require_once __DIR__.'/TestAsset/AlwaysSuccessTest.php';
+require_once __DIR__.'/TestAsset/ConsoleAdapter.php';
 
 class RunnerTest extends \PHPUnit_Framework_TestCase
 {
@@ -52,7 +53,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
                 $failure,
             ),
             array(
-                $unknown = new UnknownResult(),
+                $unknown = new Unknown(),
                 $unknown,
             ),
             array(
@@ -77,7 +78,6 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
             ),
         );
     }
-
 
     public function testConfig()
     {
@@ -196,7 +196,7 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
             $self->assertSame($test, $e->getTarget());
             $self->assertContains($test, $e->getParam('tests'));
             return new Success();
-        });
+        }, 100);
         $this->runner->run();
         $this->assertTrue($eventFired);
     }
@@ -207,13 +207,74 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
         $self = $this;
         $test = new AlwaysSuccessTest();
         $this->runner->addTest($test);
+        $this->runner->getEventManager()->clearListeners(RunEvent::EVENT_RUN);
         $this->runner->getEventManager()->attach(RunEvent::EVENT_RUN, function(RunEvent $e) use (&$self, &$test, &$eventFired){
             return 'foo';
-        });
+        }, 100);
         $this->setExpectedException('ZFTool\Diagnostics\Exception\RuntimeException');
         $this->runner->run();
     }
 
+    public function testSummaryWithWarnings()
+    {
+        $reporter = new BasicConsole(new ConsoleAdapter());
+        $this->runner->addReporter($reporter);
+
+        $tests = array();
+        for ($x = 0; $x < 15; $x++) {
+            $tests[] = $test = new AlwaysSuccessTest();
+        }
+
+        for ($x = 0; $x < 5; $x++) {
+            $tests[] = $test = new ReturnThisTest(new Warning());
+        }
+
+        for ($x = 0; $x < 5; $x++) {
+            $tests[] = $test = new ReturnThisTest(new Unknown());
+        }
+
+        $this->runner->addTests($tests);
+
+        ob_start();
+
+        $this->runner->run();
+
+        $this->assertStringMatchesFormat('%A5 warnings, 15 successful tests, 5 unknown test results%A', trim(ob_get_clean()));
+    }
+
+    public function testSummaryWithFailures()
+    {
+        $reporter = new BasicConsole(new ConsoleAdapter());
+        $this->runner->addReporter($reporter);
+
+        $tests = array();
+        for ($x = 0; $x < 15; $x++) {
+            $tests[] = $test = new AlwaysSuccessTest();
+        }
+
+        for ($x = 0; $x < 5; $x++) {
+            $tests[] = $test = new ReturnThisTest(new Warning());
+        }
+
+        for ($x = 0; $x < 5; $x++) {
+            $tests[] = $test = new ReturnThisTest(new Unknown());
+        }
+
+        for ($x = 0; $x < 5; $x++) {
+            $tests[] = $test = new ReturnThisTest(new Failure());
+        }
+
+        $this->runner->addTests($tests);
+
+        ob_start();
+        \PHPUnit_Framework_Error_Notice::$enabled  = false;
+        $this->runner->run();
+
+        $this->assertStringMatchesFormat(
+            '%A5 failures, 5 warnings, 15 successful tests, 5 unknown test results%A',
+            trim(ob_get_clean())
+        );
+    }
 
 
     /**
@@ -260,7 +321,6 @@ class RunnerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('ErrorException', $results[$test]->getData());
         $this->assertEquals(E_USER_ERROR, $results[$test]->getData()->getSeverity());
     }
-
 
     public function testBreakOnFirstFailure()
     {

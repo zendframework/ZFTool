@@ -122,8 +122,6 @@ class RunListener implements ListenerAggregateInterface
         return $this->catchErrorSeverity;
     }
 
-
-
     /**
      * Convert PHP error severity INT to name.
      *

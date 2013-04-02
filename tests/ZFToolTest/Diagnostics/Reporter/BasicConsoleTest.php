@@ -7,17 +7,16 @@ use ZFTool\Diagnostics\Result\Collection;
 use ZFTool\Diagnostics\Result\Failure;
 use ZFTool\Diagnostics\Result\Success;
 use ZFTool\Diagnostics\Result\Warning;
+use ZFTool\Diagnostics\Result\Unknown;
 use ZFTool\Diagnostics\RunEvent;
 use ZFToolTest\Diagnostics\TestAsset\AlwaysSuccessTest;
 use ZFToolTest\Diagnostics\TestAssets\ConsoleAdapter;
 use ZFToolTest\Diagnostics\TestAssets\DummyReporter;
-use ZFToolTest\Diagnostics\TestAssets\UnknownResult;
 use Zend\Console\Charset\Ascii;
 use Zend\EventManager\EventManager;
 
 require_once __DIR__.'/../TestAsset/AlwaysSuccessTest.php';
 require_once __DIR__.'/../TestAsset/ConsoleAdapter.php';
-require_once __DIR__.'/../TestAsset/UnknownResult.php';
 
 class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 {
@@ -131,7 +130,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('FFFFF', ob_get_clean());
     }
 
-    public function testUnknownResultSymbols()
+    public function testUnknownSymbols()
     {
         $e = new RunEvent();
         $tests = array_fill(0,5, new AlwaysSuccessTest());
@@ -142,7 +141,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
         ob_start();
         foreach($tests as $test){
-            $result = new UnknownResult();
+            $result = new Unknown();
             $e->setTarget($test);
             $e->setLastResult($result);
             $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
@@ -239,7 +238,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         }
 
         $e->setParam('tests', $tests);
-        $e->setParam('results', $results);
+        $e->setResults($results);
 
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
@@ -266,7 +265,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         }
 
         $e->setParam('tests', $tests);
-        $e->setParam('results', $results);
+        $e->setResults($results);
 
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
@@ -298,7 +297,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         }
 
         $e->setParam('tests', $tests);
-        $e->setParam('results', $results);
+        $e->setResults($results);
 
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
@@ -308,7 +307,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         $this->assertStringStartsWith('5 failures, 5 warnings, 15 successful tests', trim(ob_get_clean()));
     }
 
-    public function testSummaryWithUnknownResults()
+    public function testSummaryWithUnknowns()
     {
         $e = new RunEvent();
         $tests = array();
@@ -326,11 +325,11 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
         for ($x = 0; $x < 5; $x++) {
             $tests[] = $test = new AlwaysSuccessTest();
-            $results[$test] = new UnknownResult();
+            $results[$test] = new Unknown();
         }
 
         $e->setParam('tests', $tests);
-        $e->setParam('results', $results);
+        $e->setResults($results);
 
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
@@ -355,7 +354,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         $results[$test] = new Warning('foo');
 
         $e->setParam('tests', $tests);
-        $e->setParam('results', $results);
+        $e->setResults($results);
 
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
@@ -383,7 +382,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         $results[$test] = new Failure('bar');
 
         $e->setParam('tests', $tests);
-        $e->setParam('results', $results);
+        $e->setResults($results);
 
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
@@ -396,7 +395,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testUnknownResults()
+    public function testUnknowns()
     {
         $e = new RunEvent();
         $tests = array();
@@ -408,10 +407,10 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         }
 
         $tests[] = $test = new AlwaysSuccessTest();
-        $results[$test] = new UnknownResult('baz');
+        $results[$test] = new Unknown('baz');
 
         $e->setParam('tests', $tests);
-        $e->setParam('results', $results);
+        $e->setResults($results);
 
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
@@ -419,7 +418,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
         $this->em->trigger(RunEvent::EVENT_FINISH, $e);
         $this->assertStringMatchesFormat(
-            '%AUnknown result ZFToolTest\Diagnostics\TestAssets\UnknownResult: Always Successful Test%wbaz%A',
+            '%AUnknown result ZFTool\Diagnostics\Result\Unknown: Always Successful Test%wbaz%A',
             trim(ob_get_clean())
         );
     }

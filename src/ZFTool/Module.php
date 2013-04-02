@@ -2,11 +2,18 @@
 
 namespace ZFTool;
 
+use ZFTool\Diagnostics\Result\Failure;
+use ZFTool\Diagnostics\Result\Success;
+use ZFTool\Diagnostics\Result\Warning;
 use Zend\Mvc\ModuleRouteListener;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+use Zend\ModuleManager\ModuleManagerInterface as ModuleManager;
+use Zend\ModuleManager\Listener\ConfigListener as ModuleManagerConfigListener;
+use Zend\ModuleManager\ModuleEvent;
 
 class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterface, ConfigProviderInterface
 {
@@ -15,12 +22,14 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
 
     protected $config;
 
+    /**
+     * @var ServiceLocatorInterface
+     */
+    protected $sm;
+
     public function onBootstrap($e)
     {
-//        $e->getApplication()->getServiceManager()->get('translator');
-//        $eventManager        = $e->getApplication()->getEventManager();
-//        $moduleRouteListener = new ModuleRouteListener();
-//        $moduleRouteListener->attach($eventManager);
+        $this->sm = $e->getApplication()->getServiceManager();
     }
 
     public function getConfig()
@@ -83,6 +92,72 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             'install zf <path> [<version>]' => '',
             array('<path>', 'The directory where to install the ZF2 library'),
             array('<version>', 'The version to install, if not specified uses the last available'),
+        );
+    }
+
+    public function getDiagnostics()
+    {
+        /* @var $moduleManager ModuleManager */
+        $moduleManager = $this->sm->get('modulemanager');
+        return array(
+            'Is cache_dir writable' => function() use (&$moduleManager){
+                // Try to retrieve MM config listener which contains options
+                $cacheDir = false;
+                foreach($moduleManager->getEventManager()->getListeners(ModuleEvent::EVENT_LOAD_MODULES) as $listener) {
+                    /* @var $listener \Zend\Stdlib\CallbackHandler */
+                    $callback = $listener->getCallback();
+                    if(
+                        is_array($callback) &&
+                        isset($callback[0]) &&
+                        is_object($callback[0]) &&
+                        $callback[0] instanceof ModuleManagerConfigListener
+                    ){
+                        $options = $callback[0]->getOptions();
+                        $cacheDir = $options->getCacheDir();
+                        break;
+                    }
+                }
+
+
+                if (
+                    !$cacheDir ||
+                    empty($cacheDir)
+                ){
+                    return new Warning(
+                        'Module listener cache_dir is not configured correctly. Make sure that you have set '.
+                        '"cache_dir" option under "module_listener_options" in your application configuration.'
+                    );
+                }
+
+                if (!file_exists($cacheDir)) {
+                    return new Failure(
+                        'Module listener cache_dir ('. $cacheDir.') does not exist. Make sure that you have set '.
+                        '"cache_dir" option in your application config and that it points to an existing directory.',
+                        $cacheDir
+                    );
+                }
+
+                if (!is_dir($cacheDir)) {
+                    return new Failure(
+                        'Module listener cache_dir ('. $cacheDir.') is not a directory. Make sure that you have set '.
+                        '"cache_dir" option in your application config and that it points to an existing directory.',
+                        $cacheDir
+                    );
+                }
+
+                if (!is_writable($cacheDir)) {
+                    return new Failure(
+                        'Module listener cache_dir ('. $cacheDir.') is not writable. Make sure that the path, you have '.
+                        'set under "cache_dir" in your application config, is writable by your server.',
+                        $cacheDir
+                    );
+                }
+
+                return new Success(
+                    'Module listener cache dir exists and is writable: '.$cacheDir,
+                    $cacheDir
+                );
+            }
         );
     }
 }
