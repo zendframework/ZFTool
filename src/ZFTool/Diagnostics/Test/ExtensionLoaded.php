@@ -45,11 +45,24 @@ class ExtensionLoaded extends AbstractTest implements TestInterface {
 
     public function run()
     {
+        $missing = array();
         foreach ($this->extensions as $ext) {
             if(!extension_loaded($ext)) {
-                return new Failure('Extension '.$ext.' is not available.');
+                $missing[] = $ext;
             }
         }
-        return new Success(join(',', $this->extensions), get_loaded_extensions());
+        if (count($missing)) {
+            if (count($missing) > 1) {
+                return new Failure('Extensions '.join(', ', $missing).' are not available.');
+            } else {
+                return new Failure('Extension '.join('', $missing).' is not available.');
+            }
+        } else {
+            if (count($missing) > 1) {
+                return new Success(join(',', $this->extensions).' extensions are loaded.', get_loaded_extensions());
+            } else {
+                return new Success(join('', $this->extensions).' extension is loaded.', get_loaded_extensions());
+            }
+        }
     }
 }

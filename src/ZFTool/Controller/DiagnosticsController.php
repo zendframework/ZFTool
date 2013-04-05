@@ -7,10 +7,12 @@ use ZFTool\Diagnostics\Reporter\VerboseConsole;
 use ZFTool\Diagnostics\Runner;
 use ZFTool\Diagnostics\Test\Callback;
 use ZFTool\Diagnostics\Test\TestInterface;
+use Zend\Console\Request as ConsoleRequest;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\Version\Version;
 use ZFTool\Module;
 use Zend\View\Model\ConsoleModel;
+use Zend\View\Model\ViewModel;
 
 class DiagnosticsController extends AbstractActionController
 {
@@ -28,7 +30,6 @@ class DiagnosticsController extends AbstractActionController
         $breakOnFailure = $this->params()->fromRoute('b', false) || $this->params()->fromRoute('break', false);
         $verbose = $this->params()->fromRoute('v', false) || $this->params()->fromRoute('verbose', false);
         $debug = $this->params()->fromRoute('debug', false);
-        ;
         $testGroupName = $this->params()->fromRoute('testGroupName', false);
 
         // Get basic diag configuration
@@ -111,9 +112,14 @@ class DiagnosticsController extends AbstractActionController
                 if ($sm->has($testName)) {
                     $test = $sm->get($testName);
 
-                    // Try to expand test using class name
+                // Try to expand test using class name
                 } elseif (class_exists($testName)) {
                     $class = new \ReflectionClass($testName);
+                    $test = $class->newInstanceArgs($params);
+
+                // Try to use the built-in test class
+                } elseif (class_exists('ZFTool\Diagnostics\Test\\' . $testName)) {
+                    $class = new \ReflectionClass('ZFTool\Diagnostics\Test\\' . $testName);
                     $test = $class->newInstanceArgs($params);
 
                 } else {
@@ -146,12 +152,19 @@ class DiagnosticsController extends AbstractActionController
         // Run tests
         $results = $runner->run();
 
-        // Return appropriate error code
-        $model = new ConsoleModel();
-        if ($results->getFailureCount() > 0) {
-            $model->setErrorLevel(1);
+        if ($this->getRequest() instanceof ConsoleRequest) {
+            // Return appropriate error code in console
+            $model = new ConsoleModel();
+
+            if ($results->getFailureCount() > 0) {
+                $model->setErrorLevel(1);
+            } else {
+                $model->setErrorLevel(0);
+            }
         } else {
-            $model->setErrorLevel(0);
+            // Display results as a web page
+            $model = new ViewModel();
+            $model->setVariable('results', $results);
         }
 
         return $model;

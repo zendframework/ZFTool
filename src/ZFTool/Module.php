@@ -108,6 +108,58 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
         /* @var $moduleManager ModuleManager */
         $moduleManager = $this->sm->get('modulemanager');
         return array(
+            'System time' => function() {
+                if(time() < 1365166650) {
+                    return new Failure('System clock is not properly set - current time: '.date('r'), time());
+                } else {
+                    return new Success(date('r'), time());
+                }
+            },
+
+            'PHP Magic Quotes' => function() {
+                if (ini_get('magic_quotes') || ini_get('magic_quotes_gpc') || ini_get('magic_quotes_runtime')) {
+                    return new Failure(
+                        'Magic Quotes PHP feature is currently enabled. This can lead to unexpected errors in '.
+                        'PHP applications. It is recommended that you disable and use proper incoming data '.
+                        'and sanitization using Zend\Validator and Zend\Filter. More information on disabling '.
+                        'magic quotes can be found at http://www.php.net/manual/pl/security.magicquotes.disabling.php'
+                    );
+                } else {
+                    return new Success('currently disabled.');
+                }
+            },
+
+            'PHP register_globals' => function() {
+                if (ini_get('register_globals')) {
+                    return new Failure(
+                        'register_globals PHP setting is currently enabled. This can lead to unexpected errors in '.
+                        'and is a security threat. It is recommended that you disable this feature by setting '.
+                        'register_globals = off in your php.ini file'
+                    );
+                } else {
+                    return new Success('currently disabled.');
+                }
+            },
+
+            'APC version' => function() {
+                if(!$version = phpversion('apc')){
+                    return new Success('APC extension not installed');
+                }
+
+                // Check buggy version 3.1.14
+                // @link http://marc.info/?l=php-internals&m=135996767925762&w=2
+                if (version_compare($version, '3.1.14', 'eq')) {
+                    return new Failure(
+                        'You are using version 3.1.14 which has serious memory issues and has been removed from '.
+                        'distribution by its author. More information can be found at '.
+                        'https://bugs.php.net/bug.php?id=63909'
+                        , $version
+                    );
+                }
+
+                return new Success('Using APC version ' . $version, $version);
+            },
+
             'Is cache_dir writable' => function() use (&$moduleManager){
                 // Try to retrieve MM config listener which contains options
                 $cacheDir = false;
