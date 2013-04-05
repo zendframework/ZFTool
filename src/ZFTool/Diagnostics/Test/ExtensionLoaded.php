@@ -59,9 +59,20 @@ class ExtensionLoaded extends AbstractTest implements TestInterface {
             }
         } else {
             if (count($missing) > 1) {
-                return new Success(join(',', $this->extensions).' extensions are loaded.', get_loaded_extensions());
+                $versions = array();
+                foreach($this->extensions as $ext) {
+                    $versions[$ext] = phpversion($ext) ? phpversion($ext) : 'loaded';
+                }
+                return new Success(
+                    join(',', $this->extensions).' extensions are loaded.',
+                    $versions
+                );
             } else {
-                return new Success(join('', $this->extensions).' extension is loaded.', get_loaded_extensions());
+                $ext = $this->extensions[0];
+                return new Success(
+                    $ext . ' extension is loaded.',
+                    $ext .' ' . (phpversion($ext) ? phpversion($ext) : 'loaded')
+                );
             }
         }
     }

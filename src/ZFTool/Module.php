@@ -185,7 +185,8 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
                 ){
                     return new Warning(
                         'Module listener cache_dir is not configured correctly. Make sure that you have set '.
-                        '"cache_dir" option under "module_listener_options" in your application configuration.'
+                        '"cache_dir" option under "module_listener_options" in your application configuration.',
+                        isset($options) ? $options->toArray() : null
                     );
                 }
 

@@ -23,6 +23,29 @@ return array(
         ),
     ),
 
+    'view_manager' => array(
+        'template_map' => array(
+            'zf-tool/diagnostics/run' => __DIR__ . '/../view/diagnostics/run.phtml',
+        )
+    ),
+
+    // Uncomment the following to enable browser-based diagnostics
+    'router' => array(
+        'routes' => array(
+            'zftool-diagnostics' => array(
+                'type'  => 'Zend\Mvc\Router\Http\Literal',
+                'options' => array(
+                    'route' => '/diagnostics',
+                    'defaults' => array(
+                        'controller' => 'ZFTool\Controller\Diagnostics',
+                        'action'     => 'run'
+                    )
+                )
+            )
+        )
+    ),
+
+
     'console' => array(
         'router' => array(
             'routes' => array(

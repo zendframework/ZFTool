@@ -143,10 +143,12 @@ class DiagnosticsController extends AbstractActionController
         $runner->addTests($testCollection);
         $runner->getConfig()->setBreakOnFailure($breakOnFailure);
 
-        if ($verbose || $debug) {
-            $runner->addReporter(new VerboseConsole($console, $debug));
-        } else {
-            $runner->addReporter(new BasicConsole($console));
+        if ($this->getRequest() instanceof ConsoleRequest) {
+            if ($verbose || $debug) {
+                $runner->addReporter(new VerboseConsole($console, $debug));
+            } else {
+                $runner->addReporter(new BasicConsole($console));
+            }
         }
 
         // Run tests
