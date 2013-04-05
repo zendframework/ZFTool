@@ -66,6 +66,14 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             'modules [list]'              => 'show loaded modules',
             'version | --version'         => 'display current Zend Framework version',
 
+            'Diagnostics',
+            'diag [options] [module name]'  => 'run diagnostics',
+            array('[module name]'               , '(Optional) name of module to test'),
+            array('-v --verbose'                , 'Display detailed information.'),
+            array('-b --break'                  , 'Stop testing on first failure'),
+            array('-q --quiet'                  , 'Do not display any output unless an error occurs.'),
+            array('--debug'                     , 'Display raw debug info from tests.'),
+
             'Application configuration:',
             'config [list]'             => 'list all configuration options',
             'config get <name>'         => 'display a single config value, i.e. "config get db.host"',

@@ -1,8 +1,7 @@
 <?php
 namespace ZFToolTest\Diagnostics\Reporter;
 
-
-use ZFTool\Diagnostics\Reporter\BasicConsole;
+use ZFTool\Diagnostics\Reporter\VerboseConsole;
 use ZFTool\Diagnostics\Result\Collection;
 use ZFTool\Diagnostics\Result\Failure;
 use ZFTool\Diagnostics\Result\Success;
@@ -18,7 +17,7 @@ use Zend\EventManager\EventManager;
 require_once __DIR__.'/../TestAsset/AlwaysSuccessTest.php';
 require_once __DIR__.'/../TestAsset/ConsoleAdapter.php';
 
-class BasicConsoleTest extends \PHPUnit_Framework_TestCase
+class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \ZFToolTest\Diagnostics\TestAssets\ConsoleAdapter
@@ -26,7 +25,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
     protected $console;
 
     /**
-     * @var \ZFTool\Diagnostics\Reporter\BasicConsole
+     * @var \ZFTool\Diagnostics\Reporter\VerboseConsole
      */
     protected $reporter;
 
@@ -40,15 +39,10 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         $this->em = new EventManager();
         $this->console = new ConsoleAdapter();
         $this->console->setCharset(new Ascii());
-        $this->reporter = new BasicConsole($this->console);
+        $this->reporter = new VerboseConsole($this->console);
         $this->em->attachAggregate($this->reporter);
     }
 
-    public function testDummyReporter()
-    {
-        $reporter = new DummyReporter();
-
-    }
     public function testConsoleSettingGetting()
     {
         $this->assertSame($this->console, $this->reporter->getConsole());
@@ -68,162 +62,190 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
-        $this->assertStringMatchesFormat('Starting%A', ob_get_clean());
+        $this->assertStringMatchesFormat('Starting diagnostics%A', ob_get_clean());
     }
 
-    public function testProgressDots()
+    public function testSuccessProgress()
     {
         $e = new RunEvent();
-        $tests = array_fill(0,5, new AlwaysSuccessTest());
+        $tests = array(
+            new AlwaysSuccessTest(),
+            new AlwaysSuccessTest(),
+        );
         $e->setParam('tests', $tests);
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
         ob_clean();
 
-        foreach($tests as $test){
-            $result = new Success();
-            $e->setTarget($test);
-            $e->setLastResult($result);
-            $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
-        }
+        $result = new Success();
+        $e->setTarget($tests[0]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals('  OK   Always Successful Test' . PHP_EOL, ob_get_clean());
+        ob_start();
 
-        $this->assertEquals('.....', ob_get_clean());
+        $result = new Success('this is a message');
+        $e->setTarget($tests[1]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals('  OK   Always Successful Test: this is a message' . PHP_EOL, ob_get_clean());
     }
 
-    public function testWarningSymbols()
+    public function testWarningProgress()
     {
         $e = new RunEvent();
-        $tests = array_fill(0,5, new AlwaysSuccessTest());
+        $tests = array(
+            new AlwaysSuccessTest(),
+            new AlwaysSuccessTest(),
+        );
         $e->setParam('tests', $tests);
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
-        ob_get_clean();
+        ob_clean();
 
+        $result = new Warning();
+        $e->setTarget($tests[0]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals(' WARN  Always Successful Test' . PHP_EOL, ob_get_clean());
         ob_start();
-        foreach($tests as $test){
-            $result = new Warning();
-            $e->setTarget($test);
-            $e->setLastResult($result);
-            $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
-        }
 
-        $this->assertEquals('!!!!!', ob_get_clean());
+        $result = new Warning('this is a message');
+        $e->setTarget($tests[1]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals(' WARN  Always Successful Test: this is a message' . PHP_EOL, ob_get_clean());
     }
 
-    public function testFailureSymbols()
+    public function testFailureProgress()
     {
         $e = new RunEvent();
-        $tests = array_fill(0,5, new AlwaysSuccessTest());
+        $tests = array(
+            new AlwaysSuccessTest(),
+            new AlwaysSuccessTest(),
+        );
         $e->setParam('tests', $tests);
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
-        ob_get_clean();
+        ob_clean();
 
+        $result = new Failure();
+        $e->setTarget($tests[0]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals(' FAIL  Always Successful Test' . PHP_EOL, ob_get_clean());
         ob_start();
-        foreach($tests as $test){
-            $result = new Failure();
-            $e->setTarget($test);
-            $e->setLastResult($result);
-            $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
-        }
 
-        $this->assertEquals('FFFFF', ob_get_clean());
+        $result = new Failure('this is a message');
+        $e->setTarget($tests[1]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals(' FAIL  Always Successful Test: this is a message' . PHP_EOL, ob_get_clean());
     }
 
     public function testUnknownSymbols()
     {
         $e = new RunEvent();
-        $tests = array_fill(0,5, new AlwaysSuccessTest());
+        $tests = array(
+            new AlwaysSuccessTest(),
+            new AlwaysSuccessTest(),
+        );
         $e->setParam('tests', $tests);
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
-        ob_get_clean();
+        ob_clean();
 
+        $result = new Unknown();
+        $e->setTarget($tests[0]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals(' ????  Always Successful Test' . PHP_EOL, ob_get_clean());
         ob_start();
-        foreach($tests as $test){
-            $result = new Unknown();
-            $e->setTarget($test);
-            $e->setLastResult($result);
-            $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
-        }
 
-        $this->assertEquals('?????', ob_get_clean());
+        $result = new Unknown('this is a message');
+        $e->setTarget($tests[1]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals(' ????  Always Successful Test: this is a message' . PHP_EOL, ob_get_clean());
     }
 
-    public function testProgressDotsNoGutter()
+    public function testInfoOverflow()
     {
-        $e = new RunEvent();
         $this->console->setTestWidth(40);
-        $tests = array_fill(0,40, new AlwaysSuccessTest());
-        $e->setParam('tests', $tests);
 
+        $e = new RunEvent();
+        $tests = array(
+            new AlwaysSuccessTest(),
+            new AlwaysSuccessTest(),
+        );
+        $e->setParam('tests', $tests);
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
-        ob_get_clean();
+        ob_clean();
 
+
+        $result = new Success(
+            'foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo'
+        );
+        $e->setTarget($tests[0]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals(
+            '  OK   Always Successful Test: foo foo' . PHP_EOL .
+            '       foo foo foo foo foo foo foo foo' . PHP_EOL .
+            '       foo foo foo foo foo foo foo'     . PHP_EOL
+            , ob_get_clean()
+        );
         ob_start();
-        foreach($tests as $test){
-            $result = new Success();
-            $e->setTarget($test);
-            $e->setLastResult($result);
-            $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
-        }
 
-        $this->assertEquals(str_repeat('.', 40), ob_get_clean());
+        $result = new Failure(
+            'foofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoofoo'
+        );
+        $e->setTarget($tests[1]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals(
+            ' FAIL  Always Successful Test:' . PHP_EOL .
+            '       foofoofoofoofoofoofoofoofoofoofoo' . PHP_EOL .
+            '       foofoofoofoofoofoofoofoofoofoofoo' . PHP_EOL .
+            '       foo'                               . PHP_EOL
+            , ob_get_clean()
+        );
     }
 
-    public function testProgressOverflow()
+    public function testDataDump()
     {
-        $e = new RunEvent();
         $this->console->setTestWidth(40);
-        $tests = array_fill(0,80, new AlwaysSuccessTest());
-        $e->setParam('tests', $tests);
+        $this->reporter->getDisplayData();
+        $this->reporter->setDisplayData(true);
 
+        $e = new RunEvent();
+        $tests = array(
+            new AlwaysSuccessTest(),
+            new AlwaysSuccessTest(),
+        );
+        $e->setParam('tests', $tests);
         ob_start();
         $this->em->trigger(RunEvent::EVENT_START, $e);
-        ob_get_clean();
+        ob_clean();
 
+
+        $result = new Success('foo', array('1',2,3));
+        $e->setTarget($tests[0]);
+        $e->setLastResult($result);
+        $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
+        $this->assertEquals(
+            '  OK   Always Successful Test: foo'       . PHP_EOL .
+            '       ---------------------------------' . PHP_EOL .
+            '       array ('                           . PHP_EOL .
+            '         0 => \'1\','                     . PHP_EOL .
+            '         1 => 2,'                         . PHP_EOL .
+            '         2 => 3,'                         . PHP_EOL .
+            '       )'                                 . PHP_EOL .
+            '       ---------------------------------' . PHP_EOL
+            , ob_get_clean()
+        );
         ob_start();
-        foreach($tests as $test){
-            $result = new Success();
-            $e->setTarget($test);
-            $e->setLastResult($result);
-            $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
-        }
-
-        $expected  = '......................... 25 / 80 ( 31%)';
-        $expected .= '......................... 50 / 80 ( 63%)';
-        $expected .= '......................... 75 / 80 ( 94%)';
-        $expected .= '.....';
-
-        $this->assertEquals($expected, ob_get_clean());
-    }
-
-    public function testProgressOverflowMatch()
-    {
-        $e = new RunEvent();
-        $this->console->setTestWidth(40);
-        $tests = array_fill(0,75, new AlwaysSuccessTest());
-        $e->setParam('tests', $tests);
-
-        ob_start();
-        $this->em->trigger(RunEvent::EVENT_START, $e);
-        ob_get_clean();
-
-        ob_start();
-        foreach($tests as $test){
-            $result = new Success();
-            $e->setTarget($test);
-            $e->setLastResult($result);
-            $this->em->trigger(RunEvent::EVENT_AFTER_RUN, $e);
-        }
-
-
-        $expected  = '......................... 25 / 75 ( 33%)';
-        $expected .= '......................... 50 / 75 ( 67%)';
-        $expected .= '......................... 75 / 75 (100%)';
-
-        $this->assertEquals($expected, ob_get_clean());
     }
 
     public function testSummaryAllSuccessful()
@@ -339,7 +361,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         $this->assertStringMatchesFormat('%A5 unknown test results%A', trim(ob_get_clean()));
     }
 
-    public function testWarnings()
+    public function testSummaryWithUnknownsAndFailures()
     {
         $e = new RunEvent();
         $tests = array();
@@ -350,65 +372,16 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
             $results[$test] = new Success();
         }
 
-        $tests[] = $test = new AlwaysSuccessTest();
-        $results[$test] = new Warning('foo');
-
-        $e->setParam('tests', $tests);
-        $e->setResults($results);
-
-        ob_start();
-        $this->em->trigger(RunEvent::EVENT_START, $e);
-        ob_clean();
-
-        $this->em->trigger(RunEvent::EVENT_FINISH, $e);
-        $this->assertStringMatchesFormat(
-            '%AWarning: Always Successful Test%wfoo',
-            trim(ob_get_clean())
-        );
-    }
-
-    public function testFailures()
-    {
-        $e = new RunEvent();
-        $tests = array();
-        $test = null;
-        $results = new Collection();
-        for ($x = 0; $x < 15; $x++) {
+        for ($x = 0; $x < 5; $x++) {
             $tests[] = $test = new AlwaysSuccessTest();
-            $results[$test] = new Success();
+            $results[$test] = new Failure();
         }
 
-        $tests[] = $test = new AlwaysSuccessTest();
-        $results[$test] = new Failure('bar');
-
-        $e->setParam('tests', $tests);
-        $e->setResults($results);
-
-        ob_start();
-        $this->em->trigger(RunEvent::EVENT_START, $e);
-        ob_clean();
-
-        $this->em->trigger(RunEvent::EVENT_FINISH, $e);
-        $this->assertStringMatchesFormat(
-            '%AFailure: Always Successful Test%wbar',
-            trim(ob_get_clean())
-        );
-    }
-
-    public function testUnknowns()
-    {
-        $e = new RunEvent();
-        $tests = array();
-        $test = null;
-        $results = new Collection();
-        for ($x = 0; $x < 15; $x++) {
+        for ($x = 0; $x < 5; $x++) {
             $tests[] = $test = new AlwaysSuccessTest();
-            $results[$test] = new Success();
+            $results[$test] = new Unknown();
         }
 
-        $tests[] = $test = new AlwaysSuccessTest();
-        $results[$test] = new Unknown('baz');
-
         $e->setParam('tests', $tests);
         $e->setResults($results);
 
@@ -417,10 +390,9 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         ob_clean();
 
         $this->em->trigger(RunEvent::EVENT_FINISH, $e);
-        $this->assertStringMatchesFormat(
-            '%AUnknown result ZFTool\Diagnostics\Result\Unknown: Always Successful Test%wbaz%A',
-            trim(ob_get_clean())
-        );
+        $result = trim(ob_get_clean());
+        $this->assertStringMatchesFormat('%A5 failures%A', $result);
+        $this->assertStringMatchesFormat('%A5 unknown test results%A', $result);
     }
 
     public function testStoppedNotice()

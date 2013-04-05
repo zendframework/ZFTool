@@ -1,8 +1,11 @@
 <?php
 namespace ZFToolTest\Diagnostics\Test;
 
+use ZFTool\Diagnostics\Result\Success;
+use ZFTool\Diagnostics\Test\Callback;
 use ZFTool\Diagnostics\Test\ClassExists;
 use ZFTool\Diagnostics\Test\CpuPerformance;
+use ZFTool\Diagnostics\Test\ExtensionLoaded;
 use ZFTool\Diagnostics\Test\PhpVersion;
 use ZFToolTest\Diagnostics\TestAsset\AlwaysSuccessTest;
 
@@ -92,6 +95,44 @@ class BasicTestsTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    public function testCallback()
+    {
+        $called = false;
+        $expectedResult = new Success();
+        $test = new Callback(function() use (&$called, $expectedResult) {
+            $called = true;
+            return $expectedResult;
+        });
+        $result= $test->run();
+        $this->assertTrue($called);
+        $this->assertSame($expectedResult, $result);
+    }
+
+    public function testExtensionLoaded()
+    {
+        $allExtensions = get_loaded_extensions();
+        $ext1 = $allExtensions[array_rand($allExtensions)];
+
+        $test = new ExtensionLoaded($ext1);
+        $this->assertInstanceOf('ZFTool\Diagnostics\Result\Success', $test->run());
+
+        $test = new ExtensionLoaded('improbableExtName999999999999999999');
+        $this->assertInstanceOf('ZFTool\Diagnostics\Result\Failure', $test->run());
+
+        $extensions = array();
+        foreach(array_rand($allExtensions, 3) as $key) {
+            $extensions[] = $allExtensions[$key];
+        }
+
+        $test = new ExtensionLoaded($extensions);
+        $this->assertInstanceOf('ZFTool\Diagnostics\Result\Success', $test->run());
+
+        $extensions[] = 'improbableExtName9999999999999999999999';
+
+        $test = new ExtensionLoaded($extensions);
+        $this->assertInstanceOf('ZFTool\Diagnostics\Result\Failure', $test->run());
+    }
+
     public function testPhpVersionInvalidVersion()
     {
         $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
@@ -127,5 +168,18 @@ class BasicTestsTest extends \PHPUnit_Framework_TestCase
         $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
         new ClassExists(15);
     }
+
+    public function testExtensionLoadedInvalidArgument()
+    {
+        $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
+        new ExtensionLoaded(new \stdClass);
+    }
+
+    public function testExtensionLoadedInvalidArgument2()
+    {
+        $this->setExpectedException('ZFTool\Diagnostics\Exception\InvalidArgumentException');
+        new ExtensionLoaded(15);
+    }
+
 
 }

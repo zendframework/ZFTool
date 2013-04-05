@@ -100,7 +100,7 @@ return array(
                 ),
                 'zftool-diagnostics' => array(
                     'options' => array(
-                        'route'    => '(diagnostics|diag) [-v|--verbose] [-b|--break] [<testGroupName>]',
+                        'route'    => '(diagnostics|diag) [-v|--verbose|--debug] [-q|--quiet] [-b|--break] [<testGroupName>]',
                         'defaults' => array(
                             'controller' => 'ZFTool\Controller\Diagnostics',
                             'action'     => 'run',

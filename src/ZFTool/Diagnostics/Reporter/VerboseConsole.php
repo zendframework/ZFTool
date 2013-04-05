@@ -9,7 +9,7 @@ use Zend\Console\Adapter\AdapterInterface as Console;
 use Zend\Console\ColorInterface as Color;
 use Zend\Stdlib\StringUtils;
 
-class BasicConsole extends AbstractReporter
+class VerboseConsole extends AbstractReporter
 {
     /**
      * @var \Zend\Console\Adapter\AdapterInterface
@@ -19,14 +19,15 @@ class BasicConsole extends AbstractReporter
     protected $width = 80;
     protected $total = 0;
     protected $iter = 1;
-    protected $pos = 1;
     protected $countLength;
-    protected $gutter;
+    protected $displayData = false;
     protected $stopped = false;
 
-    public function __construct(Console $console)
+    public function __construct(Console $console, $displayData = false)
     {
         $this->console = $console;
+        $this->stringUtils = StringUtils::getWrapper();
+        $this->displayData = $displayData;
     }
 
     public function onStart(RunEvent $e)
@@ -35,64 +36,83 @@ class BasicConsole extends AbstractReporter
         $this->width = $this->console->getWidth();
         $this->total = count($e->getParam('tests'));
 
-        // Calculate gutter width to accommodate number of tests passed
-        if ($this->total <= $this->width) {
-            $this->gutter = 0; // everything fits well
-        } else {
-            $this->countLength = floor(log10($this->total)) + 1;
-            $this->gutter = ($this->countLength * 2) + 11;
-        }
-
         $this->console->writeLine('Starting diagnostics:');
-        $this->console->writeLine('');
     }
 
     public function onAfterRun(RunEvent $e)
     {
+        $test = $e->getTarget();
         $result = $e->getLastResult();
 
-        // Draw a symbol
+        $descr = ' ' . $test->getLabel();
+        if ($message = $result->getMessage()) {
+            $descr .= ': ' . $result->getMessage();
+        }
+
+        if ($this->displayData && ($data = $result->getData())) {
+            $descr .= PHP_EOL . str_repeat('-', $this->width - 7);
+            $descr .= PHP_EOL . var_export($result->getData(), true);
+            $descr .= PHP_EOL . str_repeat('-', $this->width - 7);
+        }
+
+        // Draw status line
         if ($result instanceof Success) {
-            $this->console->write('.', Color::GREEN);
-        } elseif ($result instanceof Failure) {
-            $this->console->write('F', Color::WHITE, Color::RED);
-        } elseif ($result instanceof Warning) {
-            $this->console->write('!', Color::YELLOW);
-        } else {
-            $this->console->write('?', Color::YELLOW);
-        }
-
-        $this->pos++;
-
-        // Check if we need to move to the next line
-        if ($this->gutter > 0 && $this->pos > $this->width - $this->gutter) {
-            $this->console->write(
-                str_pad(
-                    str_pad($this->iter, $this->countLength, ' ', STR_PAD_LEFT) . ' / ' . $this->total .
-                    ' (' . str_pad(round($this->iter / $this->total * 100), 3, ' ', STR_PAD_LEFT) . '%)'
-                    , $this->gutter, ' ', STR_PAD_LEFT
-                )
+            $this->console->write('  OK  ', Color::WHITE, Color::GREEN);
+            $this->console->writeLine(
+                $this->strColPad(
+                    $descr,
+                    $this->width - 7,
+                    '       '
+                ), Color::GREEN
             );
-            $this->pos = 1;
+        } elseif ($result instanceof Failure) {
+            $this->console->write(' FAIL ', Color::WHITE, Color::RED);
+            $this->console->writeLine(
+                $this->strColPad(
+                    $descr,
+                    $this->width - 7,
+                    '       '
+                ), Color::RED
+            );
+        } elseif ($result instanceof Warning) {
+            $this->console->write(' WARN ', Color::NORMAL, Color::YELLOW);
+            $this->console->writeLine(
+                $this->strColPad(
+                    $descr,
+                    $this->width - 7,
+                    '       '
+                ), Color::YELLOW
+            );
+        } else {
+            $this->console->write(' ???? ', Color::NORMAL, Color::YELLOW);
+            $this->console->writeLine(
+                $this->strColPad(
+                    $descr,
+                    $this->width - 7,
+                    '       '
+                ), Color::YELLOW
+            );
         }
-
-        $this->iter++;
-
-
     }
 
     public function onFinish(RunEvent $e)
     {
         /* @var $results \ZFTool\Diagnostics\Result\Collection */
         $results = $e->getResults();
+
         $this->console->writeLine();
-        $this->console->writeLine();
+
+        // Display information that the test has been aborted.
+        if ($this->stopped) {
+            $this->console->writeLine('Diagnostics aborted because of a failure.', Color::RED);
+        }
+
 
         // Display a summary line
         if ($results->getFailureCount() == 0 && $results->getWarningCount() == 0 && $results->getUnknownCount() == 0) {
             $line = 'OK (' . $this->total . ' diagnostic tests)';
             $this->console->writeLine(
-                str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
+                str_pad($line, $this->width - 1, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::GREEN
             );
         } elseif ($results->getFailureCount() == 0) {
@@ -106,7 +126,7 @@ class BasicConsole extends AbstractReporter
             $line .= '.';
 
             $this->console->writeLine(
-                str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
+                str_pad($line, $this->width - 1, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::YELLOW
             );
         } else {
@@ -128,46 +148,13 @@ class BasicConsole extends AbstractReporter
 
         $this->console->writeLine();
 
-        // Display a list of failures and warnings
-        foreach ($results as $test) {
-            /* @var $test \ZFTool\Diagnostics\Test\TestInterface */
-            /* @var $result \ZFTool\Diagnostics\Result\ResultInterface */
-            $result = $results[$test];
-
-            if ($result instanceof Failure) {
-                $this->console->writeLine('Failure: ' . $test->getLabel(), Color::RED);
-                $message = $result->getMessage();
-                if ($message) {
-                    $this->console->writeLine($message, Color::RED);
-                }
-                $this->console->writeLine();
-            } elseif ($result instanceof Warning) {
-                $this->console->writeLine('Warning: ' . $test->getLabel(), Color::YELLOW);
-                $message = $result->getMessage();
-                if ($message) {
-                    $this->console->writeLine($message, Color::YELLOW);
-                }
-                $this->console->writeLine();
-            } elseif (!$result instanceof Success) {
-                $this->console->writeLine('Unknown result ' . get_class($result) . ': ' . $test->getLabel(), Color::YELLOW);
-                $message = $result->getMessage();
-                if ($message) {
-                    $this->console->writeLine($message, Color::YELLOW);
-                }
-                $this->console->writeLine();
-            }
-        }
-
-        // Display information that the test has been aborted.
-        if ($this->stopped) {
-            $this->console->writeLine('Diagnostics aborted because of a failure.', Color::RED);
-        }
     }
 
     public function onStop(RunEvent $e)
     {
         $this->stopped = true;
     }
+
 
     /**
      * @param \Zend\Console\Adapter\AdapterInterface $console
@@ -186,6 +173,29 @@ class BasicConsole extends AbstractReporter
     public function getConsole()
     {
         return $this->console;
+    }
+
+    public function setDisplayData($displayData)
+    {
+        $this->displayData = $displayData;
+    }
+
+    public function getDisplayData()
+    {
+        return $this->displayData;
+    }
+
+
+
+    public function strColPad($string, $width, $padding)
+    {
+        $string = $this->stringUtils->wordWrap($string, $width, PHP_EOL, true);
+        $lines = explode(PHP_EOL, $string);
+        for ($x = 1; $x < count($lines); $x++) {
+            $lines[$x] = $padding . $lines[$x];
+        }
+
+        return join(PHP_EOL, $lines);
     }
 
 

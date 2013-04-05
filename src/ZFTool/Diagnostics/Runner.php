@@ -97,15 +97,15 @@ class Runner
             $results[$test] = $result;
             $testRun->setLastResult($result);
 
-            // Stop testing on first failure
-            if ($breakOnFailure && $result instanceof Failure) {
+            // Stop testing if AFTER_RUN returned false or has been stopped
+            $afterRun = $em->trigger(RunEvent::EVENT_AFTER_RUN, $testRun);
+            if ($afterRun->stopped() || $afterRun->contains(false)) {
                 $em->trigger(RunEvent::EVENT_STOP, $testRun);
                 break;
             }
 
-            // Stop testing if AFTER_RUN returned false or has been stopped
-            $afterRun = $em->trigger(RunEvent::EVENT_AFTER_RUN, $testRun);
-            if ($afterRun->stopped() || $afterRun->contains(false)) {
+            // Stop testing on first failure
+            if ($breakOnFailure && $result instanceof Failure) {
                 $em->trigger(RunEvent::EVENT_STOP, $testRun);
                 break;
             }
