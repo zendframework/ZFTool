@@ -19,8 +19,8 @@ After installing ZF2 tool, you can run application diagnostics with the followin
 This will run the default set of diag tests and in case of trouble, display any errors or warnings.
 ![Running diag in console](img/simple-run.png)
 
-To display additional information on the tests performed, you can run diagnostics in verbose using
-`--verbose` or `-v` switch:
+To display additional information on the tests performed, you can run diagnostics in verbose mode using
+`--verbose` or `-v` switches:
 
     php public/index.php diag -v
 

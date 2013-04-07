@@ -45,7 +45,7 @@ class StreamWrapperExists extends AbstractTest implements TestInterface {
     public function run()
     {
         $availableWrappers = stream_get_wrappers();
-        array_walk($availableWrappers, 'strtolower');
+        array_walk($availableWrappers, function($v){ return strtolower($v); });
 
         foreach ($this->wrappers as $class) {
             if(!in_array($class, $availableWrappers)) {

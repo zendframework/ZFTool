@@ -58,7 +58,7 @@ class ExtensionLoaded extends AbstractTest implements TestInterface {
                 return new Failure('Extension '.join('', $missing).' is not available.');
             }
         } else {
-            if (count($missing) > 1) {
+            if (count($this->extensions) > 1) {
                 $versions = array();
                 foreach($this->extensions as $ext) {
                     $versions[$ext] = phpversion($ext) ? phpversion($ext) : 'loaded';
