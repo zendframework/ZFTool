@@ -122,6 +122,12 @@ class DiagnosticsController extends AbstractActionController
                     $class = new \ReflectionClass('ZFTool\Diagnostics\Test\\' . $testName);
                     $test = $class->newInstanceArgs($params);
 
+                // Try to find built-in function with that name
+                } elseif (function_exists($testName)) {
+                    $test = new Callback(function() use ($testName, $params){
+                        return call_user_func_array($testName, $params);
+                    });
+
                 } else {
                     continue; // unable to find test
                 }
