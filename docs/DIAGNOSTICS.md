@@ -241,12 +241,12 @@ return array(
 ````
 
 
-### Using built-in diagnostics tests
+## Using built-in diagnostics tests
 
 ZFTool provides several test classes that can easily be called from within config files. These tests reside within
 the `ZFTool\Diagnostics\Test` namespace. The following built-in tests are currently available:
 
-#### ClassExists
+### ClassExists
 
 Check if a class (or an array of classes) exist. For example:
 
@@ -266,7 +266,7 @@ return array(
 );
 ````
 
-#### CpuPerformance
+### CpuPerformance
 
 Benchmark CPU performance and return failure if it is below the given ratio. The baseline for performance calculation
 is the speed of Amazon EC2 Micro Instance (Q1 2013). You can specify the expected performance for the test, where a
@@ -287,7 +287,7 @@ return array(
 );
 ````
 
-#### DirReadable
+### DirReadable
 
 Check if a given path points to a directory and it is readable.
 
@@ -307,7 +307,7 @@ return array(
 );
 ````
 
-#### DirWritable
+### DirWritable
 
 Check if a given path points to a directory and if it can be written to.
 
@@ -327,7 +327,7 @@ return array(
 );
 ````
 
-#### ExtensionLoaded
+### ExtensionLoaded
 
 Check if a PHP extension (or an array of extensions) is currently loaded.For example:
 
@@ -348,7 +348,7 @@ return array(
 ````
 
 
-#### PhpVersion
+### PhpVersion
 
 Check if current PHP version matches the given requirement. The test accepts 2 parameters - baseline version and
 optional [comparison operator](http://www.php.net/manual/en/function.version-compare.php).
@@ -367,7 +367,7 @@ return array(
 );
 ````
 
-#### SteamWrapperExists
+### SteamWrapperExists
 
 Check if a given stream wrapper (or an array of names) is available. For example:
 
