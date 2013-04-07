@@ -61,27 +61,29 @@ A test returns:
 The simplest way to add tests is to write `getDiagnostics()` method in your module main class. For example, we could
 add the following tests to our `modules/Application/Module.php` file:
 
-    <?php
-    namespace Application;
+````php
+<?php
+namespace Application;
 
-    class Module {
-        // [...]
+class Module {
+    // [...]
 
-        /**
-         * This method should return an array of tests,
-         */
-        public function getDiagnostics()
-        {
-            return array(
-                'Memcache present' => function(){
-                    return function_exists('memcache_add');
-                },
-                'Cache directory exists' => function() {
-                    return file_exists('data/cache') && is_dir('data/cache');
-                }
-            );
-        }
+    /**
+     * This method should return an array of tests,
+     */
+    public function getDiagnostics()
+    {
+        return array(
+            'Memcache present' => function(){
+                return function_exists('memcache_add');
+            },
+            'Cache directory exists' => function() {
+                return file_exists('data/cache') && is_dir('data/cache');
+            }
+        );
     }
+}
+````
 
 The returned array should contain pairs of a `label => test`. The label can be any string and will only be
 used as a description of the tested requirement. The `test` can be a callable, a function or a string, which
@@ -96,124 +98,136 @@ component can understand the following types of definitions:
 
 The simplest form of a test is a "callable", a function or a method. Here are a few examples:
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
 
-            // "application" test group
-            'application' => array(
-                // invoke static method Application\Module::checkEnvironment()
-                'Check environment' => array('Application\Module', 'checkEnvironment'),
+        // "application" test group
+        'application' => array(
+            // invoke static method Application\Module::checkEnvironment()
+            'Check environment' => array('Application\Module', 'checkEnvironment'),
 
-                // invoke php built-in function with a parameter
-                'Check if public dir exists' => array('file_exists', 'public/'),
+            // invoke php built-in function with a parameter
+            'Check if public dir exists' => array('file_exists', 'public/'),
 
-                // invoke a static method with 2 parameters
-                'Check paths' => array(
-                    array('Application\Module', 'checkPaths'),
-                    'foo/',
-                    'bar/
-                )
+            // invoke a static method with 2 parameters
+            'Check paths' => array(
+                array('Application\Module', 'checkPaths'),
+                'foo/',
+                'bar/
             )
         )
-    );
-
+    )
+);
+````
 
 ### Test class name
 
 Assuming we have written following test class:
 
-    <?php
-    namespace Application\Test;
+````php
+<?php
+namespace Application\Test;
 
-    class is64bit extends ZFTool\Diagnostics\Test\AbstractTest
+class is64bit extends ZFTool\Diagnostics\Test\AbstractTest
+{
+    public function run()
     {
-        public function run()
-        {
-            return PHP_INT_SIZE === 8;
-        }
+        return PHP_INT_SIZE === 8;
     }
+}
+````
 
 We can now use it in our Application configuration file in the following way:
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
-            'application' => array(
-                'Verify that this system is 64bit' => 'Application\Test\is64bit'
-            )
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
+        'application' => array(
+            'Verify that this system is 64bit' => 'Application\Test\is64bit'
         )
-    );
+    )
+);
+````
 
 It is also possible to provide constructor parameters for test instances, like so:
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
-            'application' => array(
-                // equivalent of constructing new EnvironmentTest("production", 15);
-                'Verify environment' => array(
-                    'Application\Test\EnvironmentTest',
-                    'production',
-                    15
-                )
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
+        'application' => array(
+            // equivalent of constructing new EnvironmentTest("production", 15);
+            'Verify environment' => array(
+                'Application\Test\EnvironmentTest',
+                'production',
+                15
             )
         )
-    );
-
+    )
+);
+````
 
 ### Test instance fetched from Service Manager
 
 If we define the test as a string, the diag component will attempt to fetch the test from
 Application Service Manager. For example, we could have the following test class:
 
-    <?php
-    namespace Application\Test;
+````php
+<?php
+namespace Application\Test;
 
-    use Zend\ServiceManager\ServiceLocatorAwareInterface;
-    use Zend\ServiceManager\ServiceLocatorInterface;
-    use ZFTool\Diagnostics\Test\AbstractTest;
+use Zend\ServiceManager\ServiceLocatorAwareInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
+use ZFTool\Diagnostics\Test\AbstractTest;
 
-    class CheckUserModule extends AbstractTest implements ServiceLocatorAwareInterface
+class CheckUserModule extends AbstractTest implements ServiceLocatorAwareInterface
+{
+    protected $sl;
+
+    public function run()
     {
-        protected $sl;
-
-        public function run()
-        {
-            return $this->getServiceLocator()->has('zfcuser');
-        }
-
-        public function setServiceLocator(ServiceLocatorInterface $sl)
-        {
-            $this->sl = $sl;
-        }
-
-        public function getServiceLocator()
-        {
-            return $this->sl;
-        }
+        return $this->getServiceLocator()->has('zfcuser');
     }
+
+    public function setServiceLocator(ServiceLocatorInterface $sl)
+    {
+        $this->sl = $sl;
+    }
+
+    public function getServiceLocator()
+    {
+        return $this->sl;
+    }
+}
+````
 
 Now we just have to add proper definition to Service Manager and then diagnostics.
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        service_manager' => array(
-            invokables' => array(
-                'CheckUserModuleTest' => 'Application\test\CheckUserModule',
-            ),
-        ),
 
-        'diagnostics' => array(
-            'application' => array(
-                'Check if user module is loaded' => 'CheckUserModuleTest'
-            )
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    service_manager' => array(
+        invokables' => array(
+            'CheckUserModuleTest' => 'Application\test\CheckUserModule',
+        ),
+    ),
+
+    'diagnostics' => array(
+        'application' => array(
+            'Check if user module is loaded' => 'CheckUserModuleTest'
         )
-    );
+    )
+);
+````
+
 
 ### Using built-in diagnostics tests
 
@@ -224,19 +238,21 @@ the `ZFTool\Diagnostics\Test` namespace. The following built-in tests are curren
 
 Check if a class (or an array of classes) exist. For example:
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
-            'application' => array(
-                'Check Lua class' => array('ClassExists', 'Lua'),
-                'Check main RBAC classes' => array(
-                    'ClassExists',
-                    array('ZfcRbac\Module', 'ZfcRbac\Controller\Plugin\IsGranted')
-                )
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
+        'application' => array(
+            'Check Lua class' => array('ClassExists', 'Lua'),
+            'Check main RBAC classes' => array(
+                'ClassExists',
+                array('ZfcRbac\Module', 'ZfcRbac\Controller\Plugin\IsGranted')
             )
         )
-    );
+    )
+);
+````
 
 #### CpuPerformance
 
@@ -247,104 +263,117 @@ performance of EC2 Micro Instance" and a fraction of `0.5` means "at least half 
 
 The following test definition will test if current server has at least half the CPU power of EC2 Micro Instance:
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
-            'application' => array(
-                'Check minimum CPU performance' => array('CpuPerformance', 0.5),
-            )
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
+        'application' => array(
+            'Check minimum CPU performance' => array('CpuPerformance', 0.5),
         )
-    );
+    )
+);
+````
 
 #### DirReadable
 
 Check if a given path points to a directory and it is readable.
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
-            'application' => array(
-                'Check public img dir'  => array('DirReadable', 'public/img'),
-                'Check system paths' => array(
-                    'DirRedable',
-                    array('/tmp', '/usr/tmp', '/bin', '/usr/bin')
-                )
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
+        'application' => array(
+            'Check public img dir'  => array('DirReadable', 'public/img'),
+            'Check system paths' => array(
+                'DirRedable',
+                array('/tmp', '/usr/tmp', '/bin', '/usr/bin')
             )
         )
-    );
+    )
+);
+````
 
 #### DirWritable
 
 Check if a given path points to a directory and if it can be written to.
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
-            'application' => array(
-                'Check if data dir is writable'  => array('DirWritable', 'data'),
-                'Check if public dir is writable' => array(
-                    'DirWritable',
-                    array('public', 'public/img', 'public/js')
-                )
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
+        'application' => array(
+            'Check if data dir is writable'  => array('DirWritable', 'data'),
+            'Check if public dir is writable' => array(
+                'DirWritable',
+                array('public', 'public/img', 'public/js')
             )
         )
-    );
+    )
+);
+````
 
 #### ExtensionLoaded
 
 Check if a PHP extension (or an array of extensions) is currently loaded.For example:
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
-            'application' => array(
-                'Check if mbstring is loaded'  => array('ExtensionLoaded', 'mbstring'),
-                'Check if compression extensions are loaded' => array(
-                    'ExtensionLoaded',
-                    array('rar', 'bzip2', 'zip')
-                )
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
+        'application' => array(
+            'Check if mbstring is loaded'  => array('ExtensionLoaded', 'mbstring'),
+            'Check if compression extensions are loaded' => array(
+                'ExtensionLoaded',
+                array('rar', 'bzip2', 'zip')
             )
         )
-    );
+    )
+);
+````
+
 
 #### PhpVersion
 
 Check if current PHP version matches the given requirement. The test accepts 2 parameters - baseline version and
 optional [comparison operator](http://www.php.net/manual/en/function.version-compare.php).
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
-            'application' => array(
-                'Require PHP 5.4.5 or newer' => array('PhpVersion', '5.4.5'),
-                'Reject beta PHP versions'   => array('PhpVersion', '5.5.0', '<'),
-            )
-        )
-    );
 
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
+        'application' => array(
+            'Require PHP 5.4.5 or newer' => array('PhpVersion', '5.4.5'),
+            'Reject beta PHP versions'   => array('PhpVersion', '5.5.0', '<'),
+        )
+    )
+);
+````
 
 #### SteamWrapperExists
 
 Check if a given stream wrapper (or an array of names) is available. For example:
 
-    <?php
-    // modules/Application/config/module.config.php
-    return array(
-        'diagnostics' => array(
-            'application' => array(
-                'Check OGG stream' => array('StreamWrapperExists', 'ogg'),
-                'Check compression streams' => array(
-                    'StreamWrapperExists',
-                    array('zlib', 'bzip2', 'zip')
-                )
+````php
+<?php
+// modules/Application/config/module.config.php
+return array(
+    'diagnostics' => array(
+        'application' => array(
+            'Check OGG stream' => array('StreamWrapperExists', 'ogg'),
+            'Check compression streams' => array(
+                'StreamWrapperExists',
+                array('zlib', 'bzip2', 'zip')
             )
         )
-    );
+    )
+);
+````
 
 
 ## Providing debug information in tests
@@ -352,46 +381,49 @@ Check if a given stream wrapper (or an array of names) is available. For example
 A test function or class can return an instance of `Success`, `Failure` or `Warning` providing detailed information
 on the test performed and its result:
 
+````php
      $success = new ZFTool\Diagnostics\Result\Success( $message, $debugData )
      $failure = new ZFTool\Diagnostics\Result\Failure( $message, $debugData )
      $warning = new ZFTool\Diagnostics\Result\Warning( $message, $debugData )
+````
 
 Below is an example of a module-defined tests that return various responses:
 
-    <?php
-    // modules/Application/Module.php
+````php
+<?php
+// modules/Application/Module.php
 
-    namespace Application;
+namespace Application;
 
-    use ZFTool\Diagnostics\Result\Success;
-    use ZFTool\Diagnostics\Result\Failure;
-    use ZFTool\Diagnostics\Result\Warning;
+use ZFTool\Diagnostics\Result\Success;
+use ZFTool\Diagnostics\Result\Failure;
+use ZFTool\Diagnostics\Result\Warning;
 
-    class Module {
-        // [...]
+class Module {
+    // [...]
 
-        public function getDiagnostics()
-        {
-            return array(
-                'Check PHP extensions' => function(){
-                    if (!extension_loaded('mbstring') {
-                        return new Failure(
-                            'MB string is required for this module to work',
-                            get_loaded_extensions()
-                        )
-                    }
-
-                    if (!extension_loaded('apc')) {
-                        return new Warning(
-                            'APC extension is not loaded. It is highly recommended for performance.',
-                            get_loaded_extensions()
-                        );
-                    }
-
-                    return new Success('Everything in order...');
+    public function getDiagnostics()
+    {
+        return array(
+            'Check PHP extensions' => function(){
+                if (!extension_loaded('mbstring') {
+                    return new Failure(
+                        'MB string is required for this module to work',
+                        get_loaded_extensions()
+                    )
                 }
-            );
-        }
-    }
 
+                if (!extension_loaded('apc')) {
+                    return new Warning(
+                        'APC extension is not loaded. It is highly recommended for performance.',
+                        get_loaded_extensions()
+                    );
+                }
+
+                return new Success('Everything in order...');
+            }
+        );
+    }
+}
+````
 
