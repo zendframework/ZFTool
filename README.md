@@ -9,6 +9,7 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
  * Listing of loaded modules
  * Create a new project (install the ZF2 skeleton application)
  * Create a new module
+ * [Application diagnostics](docs/DIAGNOSTICS.md)
 
 ## Requirements
  * Zend Framework 2.0.0 or later.
