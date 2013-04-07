@@ -1,6 +1,26 @@
   ZF2 Tool Diagnostics
 ==========================
 
+1. [Running diagnostics from console](#console)
+2. [Running diagnosticss from a web browser](#browser)
+3. [What is a test?](#test)
+4. [Adding tests to your module](#adding)
+5. [Tests in config files](#config)
+    * [Test function name](#config1)
+    * [Test class name](#config2)
+    * [Test instance fetched from Service Manager](#config3)
+    * [Test function name](#config4)
+6. [Using built-in diagnostics tests](#builtin)
+    * [ClassExists](#builtin1)
+    * [CpuPerformance](#builtin2)
+    * [DirReadable](#builtin3)
+    * [DirWritable](#builtin4)
+    * [ExtensionLoaded](#builtin5)
+    * [PhpVersion](#builtin6)
+    * [SteamWrapperExists](#builtin7)
+7. [Providing debug information in tests](#debug)
+
+<a name="#console"/>
 ## Running diagnostics from console
 
 After installing ZF2 tool, you can run application diagnostics with the following console command:
@@ -27,7 +47,7 @@ You could also specify which tests you want to run (which module to test):
     # Run only tests included in Application module
     php public/index.php diag Application
 
-
+<a name="#browser"/>
 ## Running diagnostics from web browser
 
 In order to enable diagnostics in browser, copy the included `config/zftool.global.php.dist` file to
@@ -40,7 +60,7 @@ You can always change it to anything you like by editing the above config file.
 
 ![Browser-based diagnostics](img/browser-run.png)
 
-
+<a name="#test"/>
 ## What is a test?
 
 A test is simply:
@@ -56,6 +76,7 @@ A test returns:
   * or instance of `ZFTool\Diagnostics\Result`, including Success, Failure, Warning.
 
 
+<a name="#adding"/>
 ## Adding tests to your module
 
 The simplest way to add tests is to write `getDiagnostics()` method in your module main class. For example, we could
@@ -89,7 +110,9 @@ The returned array should contain pairs of a `label => test`. The label can be a
 used as a description of the tested requirement. The `test` can be a callable, a function or a string, which
 will automatically be expanded. The following chapter describes all available methods of declaring tests.
 
-## Tests in config files
+
+## Tests in config files            <a name="#config"/>
+
 
 The second method is to define tests in config files which will be lazy-loaded as needed. Diagnostic
 component can understand the following types of definitions:
@@ -116,7 +139,7 @@ return array(
             'Check paths' => array(
                 array('Application\Module', 'checkPaths'),
                 'foo/',
-                'bar/
+                'bar/'
             )
         )
     )
