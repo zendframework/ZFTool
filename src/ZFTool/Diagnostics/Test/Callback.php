@@ -15,13 +15,19 @@ class Callback extends AbstractTest implements TestInterface {
      */
     protected $callback;
 
-    public function __construct($callback)
+    /**
+     * @var array
+     */
+    protected $params = array();
+
+    public function __construct($callback, $params = array())
     {
         $this->callback = new CallbackHandler($callback);
+        $this->params = $params;
     }
 
     public function run()
     {
-        return $this->callback->call();
+        return $this->callback->call($this->params);
     }
 }

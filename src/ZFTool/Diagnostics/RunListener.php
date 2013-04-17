@@ -77,14 +77,14 @@ class RunListener implements ListenerAggregateInterface
 
         // Check if we've received a Result object
         if (is_object($result)) {
-            if ($result instanceof ResultInterface) {
-                return $result;
-            } else {
+            if (!$result instanceof ResultInterface) {
                 return new Failure(
                     'Test returned unknown object ' . get_class($result),
                     $result
                 );
             }
+
+            return $result;
 
         // Interpret boolean as a failure or success
         } elseif (is_bool($result)) {
@@ -96,7 +96,7 @@ class RunListener implements ListenerAggregateInterface
 
         // Convert scalars to a warning
         } elseif (is_scalar($result)) {
-            return new Warning((string)$result);
+            return new Warning('Test returned unexpected '.gettype($result), $result);
 
         // Otherwise interpret as failure
         } else {

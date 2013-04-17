@@ -2,6 +2,7 @@
 
 namespace ZFTool\Controller;
 
+use ZFTool\Diagnostics\Exception\RuntimeException;
 use ZFTool\Diagnostics\Reporter\BasicConsole;
 use ZFTool\Diagnostics\Reporter\VerboseConsole;
 use ZFTool\Diagnostics\Runner;
@@ -27,10 +28,11 @@ class DiagnosticsController extends AbstractActionController
         $config = $sm->get('Configuration');
         $mm = $sm->get('ModuleManager');
 
-        $breakOnFailure = $this->params()->fromRoute('b', false) || $this->params()->fromRoute('break', false);
-        $verbose = $this->params()->fromRoute('v', false) || $this->params()->fromRoute('verbose', false);
-        $debug = $this->params()->fromRoute('debug', false);
-        $testGroupName = $this->params()->fromRoute('testGroupName', false);
+        $verbose        = $this->params()->fromRoute('verbose', false);
+        $debug          = $this->params()->fromRoute('debug', false);
+        $quiet          = !$verbose && !$debug && $this->params()->fromRoute('quiet', false);
+        $breakOnFailure = $this->params()->fromRoute('break', false);
+        $testGroupName  = $this->params()->fromRoute('testGroupName', false);
 
         // Get basic diag configuration
         $config = isset($config['diagnostics']) ? $config['diagnostics'] : array();
@@ -44,6 +46,8 @@ class DiagnosticsController extends AbstractActionController
                     $config[$moduleName] = $tests;
                 }
 
+                // Exit the loop early if we found test definitions for
+                // the only test group that we want to run.
                 if ($testGroupName && $moduleName == $testGroupName) {
                     break;
                 }
@@ -52,20 +56,19 @@ class DiagnosticsController extends AbstractActionController
 
         // Filter array if a test group name has been provided
         if ($testGroupName) {
-            $config = array_filter($config, function ($val, $key) use (&$testGroupName) {
-                return $key == $testGroupName;
-            });
+            $config = array_intersect_key($config, array($testGroupName => 1));
         }
 
         // Analyze test definitions and construct test instances
         $testCollection = array();
         foreach ($config as $testGroupName => $tests) {
             foreach ($tests as $testLabel => $test) {
+                // Do not use numeric labels.
                 if (!$testLabel || is_numeric($testLabel)) {
                     $testLabel = false;
                 }
 
-                // a callable
+                // Handle a callable.
                 if (is_callable($test)) {
                     $test = new Callback($test);
                     if ($testLabel) {
@@ -76,10 +79,14 @@ class DiagnosticsController extends AbstractActionController
                     continue;
                 }
 
-                // handle test object instance
+                // Handle test object instance.
                 if (is_object($test)) {
                     if (!$test instanceof TestInterface) {
-                        continue; // an unknown object
+                        throw new RuntimeException(
+                            'Cannot use object of class "' . get_class($test). '" as test. '.
+                            'Expected instance of ZFTool\Diagnostics\Test\TestInterface'
+                        );
+
                     }
 
                     if ($testLabel) {
@@ -89,23 +96,36 @@ class DiagnosticsController extends AbstractActionController
                     continue;
                 }
 
-                // handle array containing callback or identifier with optional parameters
+                // Handle an array containing callback or identifier with optional parameters.
                 if (is_array($test)) {
                     if (!count($test)) {
-                        continue; // empty array
+                        throw new RuntimeException(
+                            'Cannot use an empty array() as test definition in "'.$testGroupName.'"'
+                        );
                     }
 
                     // extract test identifier and store the remainder of array as parameters
                     $testName = array_shift($test);
                     $params = $test;
 
-                    // handle test identifier
+                    // check if provided with a callable inside the array
+                    if (is_callable($testName)) {
+                        $test = new Callback($testName, $params);
+                        if ($testLabel) {
+                            $test->setLabel($testGroupName . ': ' . $testLabel);
+                        }
+
+                        $testCollection[] = $test;
+                        continue;
+                    }
                 } elseif (is_scalar($test)) {
                     $testName = $test;
                     $params = array();
 
                 } else {
-                    continue; // unknown entry
+                    throw new RuntimeException(
+                        'Cannot understand diagnostic test definition "' . gettype($test). '" in "'.$testGroupName.'"'
+                    );
                 }
 
                 // Try to expand test identifier using Service Locator
@@ -122,20 +142,21 @@ class DiagnosticsController extends AbstractActionController
                     $class = new \ReflectionClass('ZFTool\Diagnostics\Test\\' . $testName);
                     $test = $class->newInstanceArgs($params);
 
-                // Try to find built-in function with that name
-                } elseif (function_exists($testName)) {
-                    $test = new Callback(function() use ($testName, $params){
-                        return call_user_func_array($testName, $params);
-                    });
-
                 } else {
-                    continue; // unable to find test
+                    throw new RuntimeException(
+                        'Cannot find test class or service with the name of "' . $testName . '" ('.$testGroupName.')'
+                    );
                 }
 
                 if (!$test instanceof TestInterface) {
-                    continue; // not a real test
+                    // not a real test
+                    throw new RuntimeException(
+                        'The test object of class '.get_class($test).' does not implement '.
+                        'ZFTool\Diagnostics\Test\TestInterface'
+                    );
                 }
 
+                // Apply label
                 if ($testLabel) {
                     $test->setLabel($testGroupName . ': ' . $testLabel);
                 }
@@ -149,7 +170,7 @@ class DiagnosticsController extends AbstractActionController
         $runner->addTests($testCollection);
         $runner->getConfig()->setBreakOnFailure($breakOnFailure);
 
-        if ($this->getRequest() instanceof ConsoleRequest) {
+        if (!$quiet && $this->getRequest() instanceof ConsoleRequest) {
             if ($verbose || $debug) {
                 $runner->addReporter(new VerboseConsole($console, $debug));
             } else {
@@ -160,9 +181,11 @@ class DiagnosticsController extends AbstractActionController
         // Run tests
         $results = $runner->run();
 
+        // Return result
         if ($this->getRequest() instanceof ConsoleRequest) {
             // Return appropriate error code in console
             $model = new ConsoleModel();
+            $model->setVariable('results', $results);
 
             if ($results->getFailureCount() > 0) {
                 $model->setErrorLevel(1);
