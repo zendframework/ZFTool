@@ -105,13 +105,15 @@ class RunListenerTest extends \PHPUnit_Framework_TestCase
         $e->setTarget($test);
         $result = $this->em->trigger(RunEvent::EVENT_RUN, $e)->last();
         $this->assertInstanceOf('ZFTool\Diagnostics\Result\Warning', $result);
-        $this->assertEquals('something went wrong', $result->getMessage());
+        $this->assertEquals('Test returned unexpected string', $result->getMessage());
+        $this->assertEquals('something went wrong', $result->getData());
 
         $test = new ReturnThisTest(100000);
         $e->setTarget($test);
         $result = $this->em->trigger(RunEvent::EVENT_RUN, $e)->last();
         $this->assertInstanceOf('ZFTool\Diagnostics\Result\Warning', $result);
-        $this->assertEquals('100000', $result->getMessage());
+        $this->assertEquals('Test returned unexpected integer', $result->getMessage());
+        $this->assertEquals('100000', $result->getData());
     }
 
     public function testInterpretUnknownAsFailure()
