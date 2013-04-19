@@ -108,16 +108,6 @@ class DiagnosticsController extends AbstractActionController
                     $testName = array_shift($test);
                     $params = $test;
 
-                    // check if provided with a callable inside the array
-                    if (is_callable($testName)) {
-                        $test = new Callback($testName, $params);
-                        if ($testLabel) {
-                            $test->setLabel($testGroupName . ': ' . $testLabel);
-                        }
-
-                        $testCollection[] = $test;
-                        continue;
-                    }
                 } elseif (is_scalar($test)) {
                     $testName = $test;
                     $params = array();
@@ -129,17 +119,27 @@ class DiagnosticsController extends AbstractActionController
                 }
 
                 // Try to expand test identifier using Service Locator
-                if ($sm->has($testName)) {
+                if (is_string($testName) && $sm->has($testName)) {
                     $test = $sm->get($testName);
 
-                // Try to expand test using class name
-                } elseif (class_exists($testName)) {
-                    $class = new \ReflectionClass($testName);
+                // Try to use the built-in test class
+                } elseif (is_string($testName) && class_exists('ZFTool\Diagnostics\Test\\' . $testName)) {
+                    $class = new \ReflectionClass('ZFTool\Diagnostics\Test\\' . $testName);
                     $test = $class->newInstanceArgs($params);
 
-                // Try to use the built-in test class
-                } elseif (class_exists('ZFTool\Diagnostics\Test\\' . $testName)) {
-                    $class = new \ReflectionClass('ZFTool\Diagnostics\Test\\' . $testName);
+                // Check if provided with a callable inside the array
+                } elseif (is_callable($testName)) {
+                    $test = new Callback($testName, $params);
+                    if ($testLabel) {
+                        $test->setLabel($testGroupName . ': ' . $testLabel);
+                    }
+
+                    $testCollection[] = $test;
+                    continue;
+
+                // Try to expand test using class name
+                } elseif (is_string($testName) && class_exists($testName)) {
+                    $class = new \ReflectionClass($testName);
                     $test = $class->newInstanceArgs($params);
 
                 } else {

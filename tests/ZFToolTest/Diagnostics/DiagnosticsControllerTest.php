@@ -300,7 +300,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
      */
     public function testConfigBasedBuiltinTest()
     {
-        $this->config['diagnostics']['group']['foo'] = array('ClassExists',__CLASS__);
+        $this->config['diagnostics']['group']['foo'] = array('ClassExists', __CLASS__);
         $result = $this->controller->dispatch(new ConsoleRequest());
 
         $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
@@ -354,6 +354,30 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedMessage, $results[$test]->getMessage());
         $this->assertEquals($expectedData, $results[$test]->getData());
     }
+
+    /**
+     *  'diagnostics' => array(
+     *      'group' => array(
+     *          'test label' => 'PhpVersion'
+     *      )
+     *  )
+     */
+    public function testBuiltInBeforeCallable()
+    {
+        $this->config['diagnostics']['group']['foo'] = array('PhpVersion', '1.0.0');
+        $result = $this->controller->dispatch(new ConsoleRequest());
+
+        $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
+        $this->assertInstanceOf('ZFTool\Diagnostics\Result\Collection', $result->getVariable('results'));
+
+        $results = $result->getVariable('results');
+        $this->assertEquals(1, $results->count());
+        $tests = ArrayUtils::iteratorToArray(($results));
+        $test = array_pop($tests);
+
+        $this->assertInstanceOf('ZFTool\Diagnostics\Test\PhpVersion', $test);
+    }
+
 
     public function testModuleProvidedDefinitions()
     {
