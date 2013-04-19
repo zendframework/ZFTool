@@ -3,7 +3,8 @@ namespace ZFTool\Diagnostics\Result;
 
 use ZFTool\Diagnostics\Result\ResultInterface;
 
-class Unknown implements ResultInterface {
+class Unknown implements ResultInterface
+{
     /**
      * @var null|string
      */

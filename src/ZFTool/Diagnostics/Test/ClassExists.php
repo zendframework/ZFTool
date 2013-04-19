@@ -10,8 +10,8 @@ use ZFTool\Diagnostics\Result\Success;
  *
  * @package ZFTool\Diagnostics\Test
  */
-class ClassExists extends AbstractTest implements TestInterface {
-
+class ClassExists extends AbstractTest implements TestInterface
+{
     /**
      * @var array|\Traversable
      */

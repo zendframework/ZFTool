@@ -144,12 +144,12 @@ EOD;
 
     /**
      * Get stream context for proxy, if necessary
-     * 
+     *
      * @return null|resource
      */
     public static function getContextProxy()
     {
-        
+
         $proxyURL = getenv('HTTP_PROXY');
 
         if (!$proxyURL) {
@@ -168,6 +168,6 @@ EOD;
             ),
         );
 
-        return stream_context_create($aContext);   
+        return stream_context_create($aContext);
     }
 }

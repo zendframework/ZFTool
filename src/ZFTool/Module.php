@@ -5,7 +5,6 @@ namespace ZFTool;
 use ZFTool\Diagnostics\Result\Failure;
 use ZFTool\Diagnostics\Result\Success;
 use ZFTool\Diagnostics\Result\Warning;
-use Zend\Mvc\ModuleRouteListener;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
@@ -55,7 +54,7 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
 
     public function getConsoleUsage(ConsoleAdapterInterface $console)
     {
-        if(!empty($this->config->disableUsage)){
+        if (!empty($this->config->disableUsage)) {
             return null; // usage information has been disabled
         }
 
@@ -107,9 +106,10 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
     {
         /* @var $moduleManager ModuleManager */
         $moduleManager = $this->sm->get('modulemanager');
+
         return array(
             'System time' => function() {
-                if(time() < 1365166650) {
+                if (time() < 1365166650) {
                     return new Failure('System clock is not properly set - current time: '.date('r'), time());
                 } else {
                     return new Success(date('r'), time());
@@ -142,7 +142,7 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             },
 
             'APC version' => function() {
-                if(!$version = phpversion('apc')){
+                if (!$version = phpversion('apc')) {
                     return new Success('APC extension not installed');
                 }
 
@@ -160,10 +160,10 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
                 return new Success('Using APC version ' . $version, $version);
             },
 
-            'Is cache_dir writable' => function() use (&$moduleManager){
+            'Is cache_dir writable' => function() use (&$moduleManager) {
                 // Try to retrieve MM config listener which contains options
                 $cacheDir = false;
-                foreach($moduleManager->getEventManager()->getListeners(ModuleEvent::EVENT_LOAD_MODULES) as $listener) {
+                foreach ($moduleManager->getEventManager()->getListeners(ModuleEvent::EVENT_LOAD_MODULES) as $listener) {
                     /* @var $listener \Zend\Stdlib\CallbackHandler */
                     $callback = $listener->getCallback();
                     if(
@@ -177,7 +177,6 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
                         break;
                     }
                 }
-
 
                 if (
                     !$cacheDir ||

@@ -13,8 +13,8 @@ use ZFTool\Diagnostics\Result\Warning;
  *
  * @package ZFTool\Diagnostics\Test
  */
-class CpuPerformance extends AbstractTest implements TestInterface {
-
+class CpuPerformance extends AbstractTest implements TestInterface
+{
     protected $baseline = 1.0;
     protected $iterations = 1000;
     protected $minPerformance = 1;
@@ -63,7 +63,8 @@ class CpuPerformance extends AbstractTest implements TestInterface {
      * @param $precision
      * @return string
      */
-    public static function calcPi($precision){
+    public static function calcPi($precision)
+    {
         $limit = ceil(log($precision)/log(2))-1;
         bcscale($precision+6);
         $a = 1;

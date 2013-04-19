@@ -8,8 +8,8 @@ use Zend\Stdlib\CallbackHandler;
  *
  * @package ZFTool\Diagnostics\Test
  */
-class Callback extends AbstractTest implements TestInterface {
-
+class Callback extends AbstractTest implements TestInterface
+{
     /**
      * @var CallbackHandler
      */

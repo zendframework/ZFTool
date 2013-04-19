@@ -686,6 +686,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
 
 }
 
-function testOutlineFunction($message = 'bar', $data = null) {
+function testOutlineFunction($message = 'bar', $data = null)
+{
     return new Success($message, $data);
 }

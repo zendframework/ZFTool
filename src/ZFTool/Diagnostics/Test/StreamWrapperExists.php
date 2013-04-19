@@ -10,8 +10,8 @@ use ZFTool\Diagnostics\Result\Success;
  *
  * @package ZFTool\Diagnostics\Test
  */
-class StreamWrapperExists extends AbstractTest implements TestInterface {
-
+class StreamWrapperExists extends AbstractTest implements TestInterface
+{
     /**
      * @var array|\Traversable
      */

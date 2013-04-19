@@ -13,8 +13,8 @@ use ZFTool\Diagnostics\Result\Success;
  *
  * @package ZFTool\Diagnostics\Test
  */
-class PhpVersion extends AbstractTest implements TestInterface {
-
+class PhpVersion extends AbstractTest implements TestInterface
+{
     /**
      * @var string
      */
@@ -58,8 +58,8 @@ class PhpVersion extends AbstractTest implements TestInterface {
             throw new InvalidArgumentException(
                 'Expected comparison operator as a string, got '.gettype($operator)
             );
-        } 
-        
+        }
+
         if(!in_array($operator, array(
             '<', 'lt', '<=', 'le', '>', 'gt', '>=', 'ge', '==', '=', 'eq', '!=', '<>', 'ne'
         ))) {

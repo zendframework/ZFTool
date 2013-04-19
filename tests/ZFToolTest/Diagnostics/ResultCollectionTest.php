@@ -25,7 +25,8 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
 
     public function tearDown(){}
 
-    public static function invalidKeysProvider(){
+    public static function invalidKeysProvider()
+    {
         return array(
             array(0),
             array(1),
@@ -36,7 +37,8 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public static function invalidValuesProvider(){
+    public static function invalidValuesProvider()
+    {
         return array(
             array(0),
             array(1),
