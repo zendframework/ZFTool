@@ -9,14 +9,6 @@
     "license": "BSD-3-Clause",
     "repositories": [
         {
-            "type": "vcs",
-            "url": "https://github.com/zendframework/Component_ZendConsole.git"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/zendframework/Component_ZendStdlib.git"
-        },
-        {
             "type": "composer",
             "url": "http://packages.zendframework.com/"
         }
@@ -30,11 +22,11 @@
         "php": ">=5.3.3",
         "zendframework/zend-mvc": ">=2.0.0",
         "zendframework/zend-modulemanager": ">=2.0.0",
-        "zendframework/zend-console": "dev-master as 2.1.4",
+        "zendframework/zend-console": ">=2.0.0",
         "zendframework/zend-code": ">=2.0.0",
         "zendframework/zend-config": ">=2.0.0",
         "zendframework/zend-view": ">=2.0.0",
-        "zendframework/zend-stdlib": "dev-master as 2.1.4",
+        "zendframework/zend-stdlib": ">=2.0.0",
         "zendframework/zend-servicemanager": ">=2.0.0",
         "zendframework/zend-file": ">=2.0.0",
         "zendframework/zend-loader": ">=2.0.0",
