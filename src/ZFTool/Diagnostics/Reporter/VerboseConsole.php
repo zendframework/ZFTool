@@ -51,7 +51,13 @@ class VerboseConsole extends AbstractReporter
 
         if ($this->displayData && ($data = $result->getData())) {
             $descr .= PHP_EOL . str_repeat('-', $this->width - 7);
-            $descr .= PHP_EOL . var_export($result->getData(), true);
+            $data = $result->getData();
+            if(is_object($data) && $data instanceof \Exception){
+                $descr .= PHP_EOL . get_class($data) . PHP_EOL . $data->getMessage() . $data->getTraceAsString();
+            }else{
+                $descr .= PHP_EOL . @var_export($result->getData(), true);
+            }
+
             $descr .= PHP_EOL . str_repeat('-', $this->width - 7);
         }
 
