@@ -2,30 +2,31 @@
 
 namespace ZFTool;
 
+use Zend\EventManager\EventInterface;
 use Zend\Mvc\ModuleRouteListener;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
+use Zend\ServiceManager\ServiceLocatorInterface;
 
 class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterface, ConfigProviderInterface
 {
-    const VERSION = '0.1';
     const NAME    = 'ZFTool - Zend Framework 2 command line Tool';
 
-    protected $config;
+    /**
+     * @var ServiceLocatorInterface
+     */
+    protected $sm;
 
-    public function onBootstrap($e)
+    public function onBootstrap(EventInterface $e)
     {
-//        $e->getApplication()->getServiceManager()->get('translator');
-//        $eventManager        = $e->getApplication()->getEventManager();
-//        $moduleRouteListener = new ModuleRouteListener();
-//        $moduleRouteListener->attach($eventManager);
+        $this->sm = $e->getApplication()->getServiceManager();
     }
 
     public function getConfig()
     {
-        return $this->config = include __DIR__ . '/../../config/module.config.php';
+        return include __DIR__ . '/../../config/module.config.php';
     }
 
     public function getAutoloaderConfig()
@@ -41,12 +42,13 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
 
     public function getConsoleBanner(ConsoleAdapterInterface $console)
     {
-        return self::NAME . ' ver. ' . self::VERSION;
+        return self::NAME;
     }
 
     public function getConsoleUsage(ConsoleAdapterInterface $console)
     {
-        if(!empty($this->config->disableUsage)){
+        $config = $this->sm->get('config');
+        if(!empty($config['ZFTool']) && !empty($config['ZFTool']['disable_usage'])){
             return null; // usage information has been disabled
         }
 
