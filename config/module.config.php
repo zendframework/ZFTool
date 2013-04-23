@@ -1,7 +1,7 @@
 <?php
 return array(
     'ZFTool' => array(
-        'disableUsage' => false,    // set to true to disable showing available ZFTool commands in Console.
+        'disable_usage' => false,    // set to true to disable showing available ZFTool commands in Console.
     ),
 
     // -----=-----=-----=-----=-----=-----=-----=-----=-----=-----=-----=-----=-----=-----=-----=-----=
