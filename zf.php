@@ -2,7 +2,7 @@
 <?php
 /**
  * ZF2 command line tool
- * 
+ *
  * @link      http://github.com/zendframework/ZFTool for the canonical source repository
  * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
@@ -20,6 +20,8 @@ if (file_exists("$basePath/vendor/autoload.php")) {
         require_once "init_autoloader.php";
     } elseif (file_exists("vendor/autoload.php")) {
         require_once "vendor/autoload.php";
+    } elseif (file_exists("autoload.php")) {
+        require_once "autoload.php";
     } else {
         echo 'Error: I cannot find the autoloader of the application.' . PHP_EOL;
         echo "Check if $basePath contains a valid ZF2 application." . PHP_EOL;
