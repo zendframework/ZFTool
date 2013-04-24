@@ -24,7 +24,7 @@ class InfoController extends AbstractActionController
             $msg = 'The ZFTool is using Zend Framework ';
         }
 
-        $console->writeLine(Module::NAME . ' ver. ' . Module::VERSION, Color::GREEN);
+        $console->writeLine(Module::NAME . ' ver. ' . Version::VERSION, Color::GREEN);
         $console->writeLine($msg . Version::VERSION);
     }
 
