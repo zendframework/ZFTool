@@ -50,4 +50,8 @@ if (file_exists("$basePath/config/application.config.php")) {
         ),
     );
 }
+
+$version = Zend\Version\Version::VERSION;
+ini_set('user_agent', 'ZFTool/' .$version. ' (Zend Framework 2 command line Tool)');
+
 Zend\Mvc\Application::init($appConfig)->run();
