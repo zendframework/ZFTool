@@ -33,6 +33,9 @@ $path = array(
 );
 set_include_path(implode(PATH_SEPARATOR, $path));
 
+// Set the user_agent for Github API
+ini_set('user_agent', 'ZFTool - Zend Framework 2 command line tool');
+
 /**
  * Setup autoloading
  */
