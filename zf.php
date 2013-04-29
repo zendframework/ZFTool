@@ -9,6 +9,7 @@
  */
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
+ini_set('user_agent', 'ZFTool - Zend Framework 2 command line tool');
 
 $basePath = __DIR__;
 if (file_exists("$basePath/vendor/autoload.php")) {
@@ -50,4 +51,5 @@ if (file_exists("$basePath/config/application.config.php")) {
         ),
     );
 }
+
 Zend\Mvc\Application::init($appConfig)->run();
