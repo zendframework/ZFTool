@@ -2,15 +2,12 @@
 
 namespace ZFTool;
 
-use ZFTool\Diagnostics\Result\Failure;
-use ZFTool\Diagnostics\Result\Success;
-use ZFTool\Diagnostics\Result\Warning;
+use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
 use Zend\EventManager\EventInterface;
 use Zend\Mvc\ModuleRouteListener;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterface, ConfigProviderInterface
