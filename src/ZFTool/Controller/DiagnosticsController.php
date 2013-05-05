@@ -28,11 +28,11 @@ class DiagnosticsController extends AbstractActionController
         $config = $sm->get('Configuration');
         $mm = $sm->get('ModuleManager');
 
-        // TODO: After ZF 2.1.6 is out, remove short flags checks.
+        // TODO: After ZF 2.2.0 is out, remove short flags checks.
         $verbose        = $this->params()->fromRoute('verbose', false) || $this->params()->fromRoute('v', false);
         $debug          = $this->params()->fromRoute('debug', false) || $this->params()->fromRoute('d', false);
         $quiet          = !$verbose && !$debug &&
-             ( $this->params()->fromRoute('quiet', false) || $this->params()->fromRoute('quiet', false) );
+             ( $this->params()->fromRoute('quiet', false) || $this->params()->fromRoute('q', false) );
         $breakOnFailure = $this->params()->fromRoute('break', false) || $this->params()->fromRoute('b', false);
         $testGroupName  = $this->params()->fromRoute('testGroupName', false);
 
