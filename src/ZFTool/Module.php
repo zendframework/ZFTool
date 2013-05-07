@@ -2,12 +2,12 @@
 
 namespace ZFTool;
 
+use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
 use Zend\EventManager\EventInterface;
 use Zend\Mvc\ModuleRouteListener;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
-use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
 class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterface, ConfigProviderInterface
@@ -58,6 +58,14 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             'Basic information:',
             'modules [list]'              => 'show loaded modules',
             'version | --version'         => 'display current Zend Framework version',
+
+            'Diagnostics',
+            'diag [options] [module name]'  => 'run diagnostics',
+            array('[module name]'               , '(Optional) name of module to test'),
+            array('-v --verbose'                , 'Display detailed information.'),
+            array('-b --break'                  , 'Stop testing on first failure'),
+            array('-q --quiet'                  , 'Do not display any output unless an error occurs.'),
+            array('--debug'                     , 'Display raw debug info from tests.'),
 
             'Application configuration:',
             'config [list]'             => 'list all configuration options',

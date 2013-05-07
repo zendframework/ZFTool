@@ -9,6 +9,7 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
  * Listing of loaded modules
  * Create a new project (install the ZF2 skeleton application)
  * Create a new module
+ * [Application diagnostics](docs/DIAGNOSTICS.md)
 
 ## Requirements
  * Zend Framework 2.0.0 or later.
@@ -36,6 +37,16 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
 
     zf.php modules [list]           show loaded modules
     zf.php version | --version      display current Zend Framework version
+
+### Diagnostics
+
+    zf.php diag [options] [module name]
+
+    [module name]       (Optional) name of module to test
+    -v --verbose        Display detailed information.
+    -b --break          Stop testing on first failure.
+    -q --quiet          Do not display any output unless an error occurs.
+    --debug             Display raw debug info from tests.
 
 ### Project creation
 

@@ -1,0 +1,186 @@
+<style type="text/css">
+    .zf2-diag-dots {
+        padding: 0px;
+        margin: 0;
+    }
+
+    .zf2-diag-dots a {
+        list-style-type: none;
+        width: 15px;
+        height: 15px;
+        margin: 5px;
+        border-width: 2px;
+        border-style: outset;
+        border-radius: 15%;
+        display: inline-block;
+    }
+
+    .zf2-diag-dot-success {
+        background: #70d900;
+        border-color: #51A360 #51a351 #387038;
+        border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
+    }
+
+    .zf2-diag-dot-failure {
+        background: #d93600;
+        border-color: #51A360 #51a351 #387038;
+        border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
+    }
+
+    .zf2-diag-dot-warning {
+        background: #ffdd15;
+        border-color: #51A360 #51a351 #387038;
+        border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25);
+    }
+
+    .zf2-diag-success {
+        color: #387038;
+    }
+
+    .zf2-diag-warning {
+        color: #d96c00;
+    }
+
+    .zf2-diag-failure {
+        color: #d93600;
+    }
+
+    .zf2-diag-details {
+        margin: 0;
+    }
+    .zf2-diag-details li {
+        list-style-type: none;
+        margin: 3px 0;
+        padding-left: 90px;
+        position: relative;
+    }
+
+    .zf2-diag-details li strong {
+        width: 80px;
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        text-align: center;
+        border-radius: 5px;
+    }
+
+    .zf2-diag-details li:hover .zf2-diag-debug-btn {
+        visibility: visible;
+    }
+    .zf2-diag-debug-btn {
+        visibility: hidden;
+        color: #666;
+        font-size: 70%;
+        padding-left: 10px
+    }
+
+    .zf2-diag-debug-btn:hover {
+        color: black;
+    }
+
+    .zf2-diag-debug {
+        display: none;
+    }
+
+    .zf2-diag-debug.active {
+        display: block;
+    }
+
+</style>
+<h2>Diagnostics</h2>
+<div class="zf2-diag-dots">
+<?php
+    $x = 0;
+    foreach($this->results as $test):
+        $x++;
+        $result = $this->results[$test];
+        $resultClass = get_class($result);
+        $resultClass = strtolower(substr($resultClass, strrpos($resultClass, '\\') + 1));
+?>
+    <a class="zf2-diag-dot-<?php echo $resultClass;?>"
+       title="<?php echo $this->escapeHtmlAttr($test->getLabel())?>"
+       href="#test<?php echo $x;?>"
+    ></a>
+<?php endforeach;?>
+</div>
+
+<?php
+if ($results->getFailureCount() == 0 && $results->getWarningCount() == 0 && $results->getUnknownCount() == 0) {
+    echo '<h4 class="zf2-diag-success">OK (' . $results->getSuccessCount().' diagnostic tests)</h4>';
+} elseif ($results->getFailureCount() == 0) {
+    echo '<h4 class="zf2-diag-warning">';
+    echo $results->getWarningCount().' warning(s), ';
+    echo $results->getSuccessCount().' successful test(s)';
+    if ($results->getUnknownCount()) {
+        echo ', ' . $results->getUnknownCount().' unknown test result(s)';
+    }
+    echo '</h4>';
+} else {
+    echo '<h4 class="zf2-diag-failure">';
+    echo $results->getFailureCount().' failure(s), ';
+    echo $results->getWarningCount().' warning(s), ';
+    echo $results->getSuccessCount().' successful test(s)';
+    if ($results->getUnknownCount()) {
+        echo ', ' . $results->getUnknownCount().' unknown test result(s)';
+    }
+    echo '</h4>';
+
+}
+?>
+
+<h3>Details</h3>
+<ul class="zf2-diag-details">
+<?php
+    $x = 0;
+    foreach($this->results as $test):
+        $x++;
+        $result = $this->results[$test];
+        $resultClass = get_class($result);
+        $resultClass = strtolower(substr($resultClass, strrpos($resultClass, '\\') + 1));
+        switch($resultClass){
+            case 'success': $resultNoun = 'OK';   break;
+            case 'failure': $resultNoun = 'FAIL'; break;
+            case 'warning': $resultNoun = 'WARN'; break;
+            default:
+            case 'unknown': $resultNoun = '????'; break;
+        };
+    ?>
+    <li class="zf2-diag-<?php echo $resultClass; ?>">
+        <a name="test<?php echo $x;?>"></a>
+        <strong class="zf2-diag-dot-<?php echo $resultClass; ?>"><?php echo $resultNoun ?></strong>
+        <?php
+            echo $test->getLabel();
+            if($message = $result->getMessage()) {
+                echo ': ' . $message;
+            }
+
+            if($data = $result->getData()) {
+                echo '<a class="zf2-diag-debug-btn" href="#">[debug]</a>';
+                echo '<pre class="zf2-diag-debug">';
+                echo $this->escapeHtml(print_r($data, true));
+                echo '</pre>';
+            }
+        ?>
+
+    </li>
+<?php endforeach;?>
+</ul>
+<script type="text/javascript">
+    var buttons = document.getElementsByClassName('zf2-diag-debug-btn');
+    for(var x = 0; x < buttons.length; x++){
+        buttons[x].addEventListener('click', function(e) {
+            var el = this.nextSibling;
+            if(el.className == 'zf2-diag-debug active')
+                el.className = 'zf2-diag-debug';
+            else
+                el.className = 'zf2-diag-debug active';
+
+            if ( e.preventDefault ) {
+                e.preventDefault();
+            } else {
+                e.returnValue = false;
+            }
+        });
+    }
+</script>

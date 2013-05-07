@@ -14,12 +14,19 @@ return array(
 
     'controllers' => array(
         'invokables' => array(
-            'ZFTool\Controller\Info'     => 'ZFTool\Controller\InfoController',
-            'ZFTool\Controller\Module'   => 'ZFTool\Controller\ModuleController',
-            'ZFTool\Controller\Classmap' => 'ZFTool\Controller\ClassmapController',
-            'ZFTool\Controller\Create'   => 'ZFTool\Controller\CreateController',
-            'ZFTool\Controller\Install'  => 'ZFTool\Controller\InstallController',
+            'ZFTool\Controller\Info'        => 'ZFTool\Controller\InfoController',
+            'ZFTool\Controller\Module'      => 'ZFTool\Controller\ModuleController',
+            'ZFTool\Controller\Classmap'    => 'ZFTool\Controller\ClassmapController',
+            'ZFTool\Controller\Create'      => 'ZFTool\Controller\CreateController',
+            'ZFTool\Controller\Install'     => 'ZFTool\Controller\InstallController',
+            'ZFTool\Controller\Diagnostics' => 'ZFTool\Controller\DiagnosticsController',
         ),
+    ),
+
+    'view_manager' => array(
+        'template_map' => array(
+            'zf-tool/diagnostics/run' => __DIR__ . '/../view/diagnostics/run.phtml',
+        )
     ),
 
     'console' => array(
@@ -97,8 +104,22 @@ return array(
                         ),
                     ),
                 ),
+                'zftool-diagnostics' => array(
+                    'options' => array(
+                        'route'    => '(diagnostics|diag) [-v|--verbose]:verbose [--debug] [-q|--quiet]:quiet [-b|--break]:break [<testGroupName>]',
+                        'defaults' => array(
+                            'controller' => 'ZFTool\Controller\Diagnostics',
+                            'action'     => 'run',
+                        ),
+                    ),
+                ),
             ),
         ),
     ),
 
+    'diagnostics' => array(
+        'ZF' => array(
+            'PHP Version' => array('ZFTool\Diagnostics\Test\PhpVersion', '5.3.3'),
+        )
+    )
 );
