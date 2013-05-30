@@ -8,6 +8,8 @@ use Zend\View\Model\ConsoleModel;
 use ZFTool\Model\Skeleton;
 use ZFTool\Model\Utility;
 use Zend\Console\ColorInterface as Color;
+use Zend\Code\Generator;
+use Zend\Code\Reflection;
 
 class CreateController extends AbstractActionController
 {
@@ -74,6 +76,70 @@ class CreateController extends AbstractActionController
         $console->writeLine("In order to execute the skeleton application you need to install the ZF2 library.");
         $console->writeLine("Execute: \"composer.phar install\" in $path");
         $console->writeLine("For more info in $path/README.md");
+    }
+
+    public function controllerAction()
+    {
+        $console = $this->getServiceLocator()->get('console');
+        $tmpDir  = sys_get_temp_dir();
+        $request = $this->getRequest();
+        $name    = $request->getParam('name');
+        $module  = $request->getParam('module');
+        $path = '.';
+
+        if (!file_exists("$path/module") || !file_exists("$path/config/application.config.php")) {
+            return $this->sendError(
+                "The path $path doesn't contain a ZF2 application. I cannot create a module here."
+            );
+        }
+        if (file_exists("$path/module/$module/src/$module/Controller/$name")) {
+            return $this->sendError(
+                "The controller $name already exists in module $module."
+            );
+        }
+
+        $ucName = ucfirst($name);
+        $ctrlPath = $path . '/module/' . $module . '/src/' . $module . '/Controller/' . $ucName.'Controller.php';
+        $controller = $ucName . 'Controller';
+
+        $code = new Generator\ClassGenerator();
+        $code->setNamespaceName(ucfirst($module) . '\Controller')
+             ->addUse('Zend\Mvc\Controller\AbstractActionController')
+             ->addUse('Zend\View\Model\ViewModel');
+
+        $code->setName($controller)
+             ->addMethods(array(
+                new Generator\MethodGenerator(
+                    'indexAction',
+                    array(),
+                    Generator\MethodGenerator::FLAG_PUBLIC,
+                    'return new ViewModel();'
+                ),
+             ))
+             ->setExtendedClass('AbstractActionController');
+
+        $file = new Generator\FileGenerator(
+            array(
+                'classes'  => array($code),
+            )
+        );
+
+        $dir = $path . "/module/$module/view/" . strtolower($module) . "/" . strtolower($name);
+        if (!file_exists($dir)) {
+            mkdir($dir);
+        }
+
+        $phtml = false;
+        $phtmlPath = $dir . "/index.phtml";
+        if (file_put_contents($phtmlPath, 'Action "index", controller "'.$ucName.'", module "'.$module.'".')) {
+            $phtml = true;
+        }
+
+        if (file_put_contents($ctrlPath, $file->generate()) && $phtml == true) {
+            $console->writeLine("The controller $name has been created in module $module.", Color::GREEN);
+        } else {
+            $console->writeLine("There was an error during controller creation.", Color::RED);
+        }
     }
 
     public function moduleAction()

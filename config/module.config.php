@@ -95,6 +95,15 @@ return array(
                         ),
                     ),
                 ),
+                'zftool-create-controller' => array(
+                    'options' => array(
+                        'route'    => 'create controller <name> <module>',
+                        'defaults' => array(
+                            'controller' => 'ZFTool\Controller\Create',
+                            'action'     => 'controller',
+                        ),
+                    ),
+                ),
                 'zftool-install-zf' => array(
                     'options' => array(
                         'route'    => 'install zf <path> [<version>]',
