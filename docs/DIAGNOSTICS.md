@@ -418,11 +418,11 @@ class Module {
     {
         return array(
             'Check PHP extensions' => function(){
-                if (!extension_loaded('mbstring') {
+                if (!extension_loaded('mbstring')) {
                     return new Failure(
                         'MB string is required for this module to work',
                         get_loaded_extensions()
-                    )
+                    );
                 }
 
                 if (!extension_loaded('apc')) {
