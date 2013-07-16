@@ -11,7 +11,22 @@ error_reporting(E_ALL);
 ini_set("display_errors", 1);
 ini_set('user_agent', 'ZFTool - Zend Framework 2 command line tool');
 
-$basePath = __DIR__;
+// make sure we get the proper CWD
+$originalCwd = getcwd();
+$applicationCwd = __DIR__;
+do {
+    chdir($applicationCwd);
+    if (file_exists('vendor/') || file_exists('init_autoloader.php')) {
+        break;
+    }
+    $applicationCwd = dirname($applicationCwd);
+} while ($applicationCwd != '/');
+if (!$applicationCwd) {
+    chdir($originalCwd);
+}
+$basePath = getcwd();
+
+// load autoloader
 if (file_exists("$basePath/vendor/autoload.php")) {
     require_once "$basePath/vendor/autoload.php";
 } else {
