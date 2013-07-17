@@ -85,7 +85,7 @@ class CreateController extends AbstractActionController
         $request = $this->getRequest();
         $name    = $request->getParam('name');
         $module  = $request->getParam('module');
-        $path = '.';
+        $path    = '.';
 
         if (!file_exists("$path/module") || !file_exists("$path/config/application.config.php")) {
             return $this->sendError(
@@ -98,8 +98,8 @@ class CreateController extends AbstractActionController
             );
         }
 
-        $ucName = ucfirst($name);
-        $ctrlPath = $path . '/module/' . $module . '/src/' . $module . '/Controller/' . $ucName.'Controller.php';
+        $ucName     = ucfirst($name);
+        $ctrlPath   = $path . '/module/' . $module . '/src/' . $module . '/Controller/' . $ucName.'Controller.php';
         $controller = $ucName . 'Controller';
 
         $code = new Generator\ClassGenerator();
