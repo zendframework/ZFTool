@@ -1,5 +1,4 @@
 <?php
-
 namespace ZFTool\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
@@ -14,23 +13,14 @@ class ModuleController extends AbstractActionController
 {
     public function listAction()
     {
-        $sm = $this->getServiceLocator();
-        try{
-            /* @var $mm \Zend\ModuleManager\ModuleManager */
-            $mm = $sm->get('modulemanager');
-        } catch(ServiceNotFoundException $e) {
-            return $this->sendError(
-                'Cannot get Zend\ModuleManager\ModuleManager instance. Is your application using it?'
-            );
-        }
         $console = $this->getServiceLocator()->get('console');
-        $modules = array_keys($mm->getLoadedModules(false));
-        $modules = array_diff($modules, array('ZFTool'));
-
+        $modules = $this->getModulesFromService();
         if (empty($modules)) {
-            $console->writeLine('No modules installed. Are you in the root folder of a ZF2 application?');
+            $console->writeLine('No modules installed. Are you in the root folder of a ZF2 app?');
             return;
         }
+        $modules = array_diff($modules, array('ZFTool'));
+
         $console->writeLine("Modules installed:");
         foreach ($modules as $module) {
             $console->writeLine($module, Color::GREEN);
@@ -45,4 +35,19 @@ class ModuleController extends AbstractActionController
         return $m;
     }
 
+    protected function getModulesFromService()
+    {
+        $sm = $this->getServiceLocator();
+        try{
+            /* @var $mm \Zend\ModuleManager\ModuleManager */
+            $mm = $sm->get('modulemanager');
+        } catch(ServiceNotFoundException $e) {
+            return $this->sendError(
+                'Cannot get Zend\ModuleManager\ModuleManager instance. Is your application using it?'
+            );
+        }
+        $modules = array_keys($mm->getLoadedModules(false));
+       
+        return $modules;
+    }
 }

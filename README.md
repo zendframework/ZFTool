@@ -19,17 +19,15 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
 ## Installation using [Composer](http://getcomposer.org)
  1. Open console (command prompt)
  2. Go to your application's directory.
- 2. Run `composer require zendframework/zftool:dev-master`
-
-## Manual installation
- 1. Clone using `git` or [download zipball](https://github.com/zendframework/ZFTool/zipball/master).
- 2. Extract to `vendor/ZFTool` in your ZF2 application
- 3. Enter the `vendor/ZFTool` folder and execute `zf.php` as reported below
+ 3. Run `composer require zendframework/zftool:dev-master`
+ 4. Execute the `vendor/bin/zf.php as reported below`
 
 ## Using the PHAR file (zftool.phar)
 
  1. Download the [zftool.phar from packages.zendframework.com](http://packages.zendframework.com/zftool.phar)
  2. Execute the `zftool.phar` with one of the options reported below (`zftool.phar` replace the `zf.php`)
+
+ 1. You can also generate the zftool.phar using the `bin/create-phar` command as reported below
 
 ## Usage
 
@@ -61,6 +59,12 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
     <name>              The name of the module to be created
     <path>              The path to the root folder of the ZF2 application (optional)
 
+### Application configuration
+    
+    zf.php config list                  list all configuration option
+    zf.php config get <name>            display a single config value, i.e. "config get db.host" 
+    zf.php config set <name> <value>    set a single config value (use only to change scalar values)   
+
 ### Classmap generator
 
     zf.php classmap generate <directory> <classmap file> [--append|-a] [--overwrite|-w]
@@ -88,12 +92,16 @@ to execute the following command:
 This command will create a *zftool.phar* file in the bin folder.
 You can use and ship only this file to execute all the ZFTool functionalities.
 After the *zftool.phar* creation, we suggest to add the folder bin of ZFTool in your PATH environment. In this
-way you can execute the *zftool.phar* script wherever you are.
+way you can execute the *zftool.phar* script wherever you are, for instance executing the command:
+
+    mv zftool.phar /usr/local/bin/zftool.phar
+
+Note: If the above fails due to permissions, run the mv line again with sudo.
 
 
 ## Todo
  * Module maintenance (installation, configuration, removal etc.) [installation DONE]
- * Inspection of application configuration. [DONE?]
+ * Inspection of application configuration. [DONE]
  * Deploying zf2 skeleton applications. [DONE]
- * Reading and writing app configuration.
+ * Reading and writing app configuration. [DONE]
 

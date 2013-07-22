@@ -68,7 +68,7 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             array('--debug'                     , 'Display raw debug info from tests.'),
 
             'Application configuration:',
-            'config [list]'             => 'list all configuration options',
+            'config list'               => 'list all configuration options',
             'config get <name>'         => 'display a single config value, i.e. "config get db.host"',
             'config set <name> <value>' => 'set a single config value (use only to change scalar values)',
 
