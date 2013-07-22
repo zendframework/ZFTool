@@ -20,14 +20,14 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
  1. Open console (command prompt)
  2. Go to your application's directory.
  3. Run `composer require zendframework/zftool:dev-master`
- 4. Execute the `vendor/bin/zf.php as reported below`
+ 4. Execute the `vendor/bin/zf.php` as reported below
 
 ## Using the PHAR file (zftool.phar)
 
  1. Download the [zftool.phar from packages.zendframework.com](http://packages.zendframework.com/zftool.phar)
  2. Execute the `zftool.phar` with one of the options reported below (`zftool.phar` replace the `zf.php`)
 
- 1. You can also generate the zftool.phar using the `bin/create-phar` command as reported below
+You can also generate the zftool.phar using the `bin/create-phar` command as reported below
 
 ## Usage
 
