@@ -9,6 +9,7 @@ return array(
     'controllers' => array(
         'invokables' => array(
             'ZFTool\Controller\Info'        => 'ZFTool\Controller\InfoController',
+            'ZFTool\Controller\Config'        => 'ZFTool\Controller\ConfigController',
             'ZFTool\Controller\Module'      => 'ZFTool\Controller\ModuleController',
             'ZFTool\Controller\Classmap'    => 'ZFTool\Controller\ClassmapController',
             'ZFTool\Controller\Create'      => 'ZFTool\Controller\CreateController',
@@ -46,10 +47,19 @@ return array(
                 ),
                 'zftool-config-list' => array(
                     'options' => array(
-                        'route'    => 'config [list]',
+                        'route'    => 'config list [--local|-l]:local',
                         'defaults' => array(
-                            'controller' => 'ZFTool\Controller\Info',
-                            'action'     => 'config',
+                            'controller' => 'ZFTool\Controller\Config',
+                            'action'     => 'list',
+                        ),
+                    ),
+                ),
+                'zftool-config' => array(
+                    'options' => array(
+                        'route'    => 'config <action> [<arg1>] [<arg2>]',
+                        'defaults' => array(
+                            'controller' => 'ZFTool\Controller\Config',
+                            'action'     => 'get',
                         ),
                     ),
                 ),
