@@ -58,6 +58,13 @@ You can also generate the zftool.phar using the `bin/create-phar` command as rep
 
     <name>              The name of the module to be created
     <path>              The path to the root folder of the ZF2 application (optional)
+    
+### Controller creation
+            
+    zf.php create controller <name> <module>
+            
+    <name>              The name of the controller to be created
+    <module>            The module in which the controller should be created
 
 ### Application configuration
     
