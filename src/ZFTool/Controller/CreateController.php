@@ -69,9 +69,21 @@ class CreateController extends AbstractActionController
                 return $this->sendError("Error during the copy of the files in $path.");
             }
         }
-        if (file_exists("$path/composer.phar")) {
-            chmod("$path/composer.phar", 0755);
-        }
+        if (file_exists("$path/composer.phar")) {          
+            exec("php $path/composer.phar self-update");                                                                             
+        } else {
+            if (!file_exists("$tmpDir/composer.phar")) {
+                if (!file_exists("$tmpDir/composer_installer.php")) {                                                                
+                    file_put_contents(                                                                                               
+                        "$tmpDir/composer_installer.php",
+                        '?>' . file_get_contents('https://getcomposer.org/installer')                                                
+                    );
+                }
+                exec("php $tmpDir/composer_installer.php --install-dir $tmpDir");                                                    
+            }                                                                                                                        
+            copy("$tmpDir/composer.phar", "$path/composer.phar");                                                                    
+        }                                                                                                                            
+        chmod("$path/composer.phar", 0755); 
         $console->writeLine("ZF2 skeleton application installed in $path.", Color::GREEN);
         $console->writeLine("In order to execute the skeleton application you need to install the ZF2 library.");
         $console->writeLine("Execute: \"composer.phar install\" in $path");
