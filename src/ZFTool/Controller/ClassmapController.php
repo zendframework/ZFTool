@@ -66,7 +66,7 @@ class ClassmapController extends AbstractActionController
 
             // Simple case: $libraryPathCompare is in $classmapPathCompare
             if (strpos($directory, $classmapPath) === 0) {
-                if($directory !== $classmapPath) { // prevent double dash in filepaths when using "." as directory
+                if ($directory !== $classmapPath) { // prevent double dash in filepaths when using "." as directory
                     $relativePath = substr($directory, strlen($classmapPath) + 1) . '/';
                 }
             } else {
