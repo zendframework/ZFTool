@@ -2,9 +2,7 @@
 
 namespace ZFToolTest\TestAsset;
 
-use Traversable;
 use Zend\EventManager\EventManager;
-use Zend\EventManager\EventManagerInterface;
 use Zend\ModuleManager\ModuleManager;
 
 /**

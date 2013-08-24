@@ -2,7 +2,6 @@
 namespace ZFToolTest\Model;
 
 use ZFTool\Model\Skeleton;
-use Zend\Code\Generator\ValueGenerator;
 
 class SkeletonTest extends \PHPUnit_Framework_TestCase
 {

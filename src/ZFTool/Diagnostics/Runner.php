@@ -2,7 +2,6 @@
 namespace ZFTool\Diagnostics;
 
 use Traversable;
-use Zend\ServiceManager\ConfigInterface;
 use ZendDiagnostics\Runner\Reporter\ReporterInterface;
 use ZendDiagnostics\Runner\Runner as ZendDiagnosticsRunner;
 use ZendDiagnostics\Result\Collection as ResultsCollection;
@@ -17,11 +16,11 @@ class Runner extends ZendDiagnosticsRunner
     /**
      * Create new instance of Runner, optionally providing configuration and initial collection of Checks.
      *
-     * @param ConfigInterface        $config   Config settings.
-     * @param null|array|Traversable $checks   A collection of Checks to run.
-     * @param null|ReporterInterface $reporter Reporter instance to use
+     * @param ConfigInterface|array|traversable $config   Config settings.
+     * @param null|array|Traversable            $checks   A collection of Checks to run.
+     * @param null|ReporterInterface            $reporter Reporter instance to use
      */
-    public function __construct(ConfigInterface $config = null, $checks = null, ReporterInterface $reporter = null)
+    public function __construct($config = null, $checks = null, ReporterInterface $reporter = null)
     {
         if ($config !== null) {
             $this->setConfig($config);
@@ -45,14 +44,19 @@ class Runner extends ZendDiagnosticsRunner
 
     /**
      * @param ConfigInterface|array $config
+     * @throws Exception\InvalidArgumentException
      * @return void
      */
     public function setConfig($config)
     {
-        if($config instanceof ConfigInterface) {
+        if ($config instanceof ConfigInterface) {
             $this->config = $config;
-        } else {
+        } elseif (is_array($config) || $config instanceof Traversable) {
             $this->config = new Config($config);
+        } else {
+            throw new Exception\InvalidArgumentException(
+                'Diagnostics Runner setConfig() expects an array, traversable or instance of ConfigInterface'
+            );
         }
     }
 

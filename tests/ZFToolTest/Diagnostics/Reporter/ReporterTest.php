@@ -1,16 +1,15 @@
 <?php
 namespace ZFToolTest\Diagnostics\Reporter;
 
-use ZFTool\Diagnostics\RunEvent;
 use ZFTool\Diagnostics\Runner;
-use ZFToolTest\Diagnostics\TestAsset\AlwaysSuccessTest;
+use ZFToolTest\Diagnostics\TestAsset\AlwaysSuccessCheck;
 use ZFToolTest\Diagnostics\TestAssets\DummyReporter;
 
 require_once __DIR__.'/../TestAsset/DummyReporter.php';
+require_once __DIR__.'/../TestAsset/AlwaysSuccessCheck.php';
 
 class ReporterTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testReporterAttaching()
     {
         $reporter = new DummyReporter();
@@ -24,21 +23,21 @@ class ReporterTest extends \PHPUnit_Framework_TestCase
         $reporter = new DummyReporter();
         $runner = new Runner();
         $runner->addReporter($reporter);
-        $test = new AlwaysSuccessTest();
-        $runner->addTest($test);
+        $check = new AlwaysSuccessCheck();
+        $runner->addCheck($check);
         $runner->run();
     }
 
     public function testDummyReporterStopped()
     {
-        $reporter = new DummyReporter();
+        $reporter = new DummyReporter(true);
         $runner = new Runner();
         $runner->addReporter($reporter);
-        $test = new AlwaysSuccessTest();
-        $runner->addTest($test);
-        $runner->getEventManager()->attach(RunEvent::EVENT_AFTER_RUN, function(){
-            return false;
-        });
-        $runner->run();
+        $check1 = new AlwaysSuccessCheck();
+        $check2 = new AlwaysSuccessCheck();
+        $runner->addCheck($check1);
+        $runner->addCheck($check2);
+        $result = $runner->run();
+        $this->assertFalse($result->offsetExists($check2));
     }
 }
