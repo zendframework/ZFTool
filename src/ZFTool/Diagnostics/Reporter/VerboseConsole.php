@@ -1,28 +1,69 @@
 <?php
 namespace ZFTool\Diagnostics\Reporter;
 
-use ZFTool\Diagnostics\Result\Failure;
-use ZFTool\Diagnostics\Result\Success;
-use ZFTool\Diagnostics\Result\Warning;
-use ZFTool\Diagnostics\RunEvent;
+use ArrayObject;
 use Zend\Console\Adapter\AdapterInterface as Console;
 use Zend\Console\ColorInterface as Color;
 use Zend\Stdlib\StringUtils;
+use ZendDiagnostics\Check\CheckInterface;
+use ZendDiagnostics\Result\Collection as ResultsCollection;
+use ZendDiagnostics\Result\Failure;
+use ZendDiagnostics\Result\ResultInterface;
+use ZendDiagnostics\Result\Success;
+use ZendDiagnostics\Result\Warning;
+use ZendDiagnostics\Runner\Reporter\ReporterInterface;
 
-class VerboseConsole extends AbstractReporter
+
+class VerboseConsole implements ReporterInterface
 {
     /**
-     * @var \Zend\Console\Adapter\AdapterInterface
+     * Console adapter used for displaying output to the screen
+     *
+     * @var Console
      */
     protected $console;
 
+    /**
+     * Width of console screen
+     *
+     * @var int
+     */
     protected $width = 80;
+
+    /**
+     * Total number of checks
+     *
+     * @var int
+     */
     protected $total = 0;
+
+    /**
+     * Current iteration in Runner loop.
+     *
+     * @var int
+     */
     protected $iter = 1;
-    protected $countLength;
+
+    /**
+     * Should result data be displayed (verbose mode)
+     *
+     * @var
+     */
     protected $displayData = false;
+
+    /**
+     * Has the testing been stopped before finishing ?
+     *
+     * @var bool
+     */
     protected $stopped = false;
 
+    /**
+     * Create new instance of reporter
+     *
+     * @param Console $console     Console adapter to use
+     * @param bool    $displayData Should result data be displayed on the screen
+     */
     public function __construct(Console $console, $displayData = false)
     {
         $this->console = $console;
@@ -30,21 +71,43 @@ class VerboseConsole extends AbstractReporter
         $this->displayData = $displayData;
     }
 
-    public function onStart(RunEvent $e)
+    /**
+     * This method is called right after Reporter starts running, via Runner::run()
+     *
+     * @param  ArrayObject $checks       A collection of Checks that will be performed
+     * @param  array       $runnerConfig Complete Runner configuration, obtained via Runner::getConfig()
+     * @return void
+     */
+    public function onStart(ArrayObject $checks, $runnerConfig)
     {
         $this->stopped = false;
         $this->width = $this->console->getWidth();
-        $this->total = count($e->getParam('tests'));
+        $this->total = $checks->count();
 
         $this->console->writeLine('Starting diagnostics:');
     }
 
-    public function onAfterRun(RunEvent $e)
-    {
-        $test = $e->getTarget();
-        $result = $e->getLastResult();
+    /**
+     * This method is called before each individual Check is performed. If this
+     * method returns false, the Check will not be performed (will be skipped).
+     *
+     * @param  CheckInterface $check Check instance that is about to be performed.
+     * @return bool|void      Return false to prevent check from happening
+     */
+    public function onBeforeRun(CheckInterface $check) {}
 
-        $descr = ' ' . $test->getLabel();
+    /**
+     * This method is called every time a Check has been performed. If this method
+     * returns false, the Runner will not perform any additional checks and stop
+     * its run.
+     *
+     * @param  CheckInterface  $check  A Check instance that has just finished running
+     * @param  ResultInterface $result Result for that particular check instance
+     * @return bool|void       Return false to prevent from running additional Checks
+     */
+    public function onAfterRun(CheckInterface $check, ResultInterface $result)
+    {
+        $descr = ' ' . $check->getLabel();
         if ($message = $result->getMessage()) {
             $descr .= ': ' . $result->getMessage();
         }
@@ -52,9 +115,9 @@ class VerboseConsole extends AbstractReporter
         if ($this->displayData && ($data = $result->getData())) {
             $descr .= PHP_EOL . str_repeat('-', $this->width - 7);
             $data = $result->getData();
-            if(is_object($data) && $data instanceof \Exception){
+            if (is_object($data) && $data instanceof \Exception) {
                 $descr .= PHP_EOL . get_class($data) . PHP_EOL . $data->getMessage() . $data->getTraceAsString();
-            }else{
+            } else {
                 $descr .= PHP_EOL . @var_export($result->getData(), true);
             }
 
@@ -101,11 +164,26 @@ class VerboseConsole extends AbstractReporter
         }
     }
 
-    public function onFinish(RunEvent $e)
+    /**
+     * This method is called when Runner has been aborted and could not finish the
+     * whole run().
+     *
+     * @param  ResultsCollection $results Collection of Results for performed Checks.
+     * @return void
+     */
+    public function onStop(ResultsCollection $results)
     {
-        /* @var $results \ZFTool\Diagnostics\Result\Collection */
-        $results = $e->getResults();
+        $this->stopped = true;
+    }
 
+    /**
+     * This method is called when Runner has finished its run.
+     *
+     * @param  ResultsCollection $results Collection of Results for performed Checks.
+     * @return void
+     */
+    public function onFinish(ResultsCollection $results)
+    {
         $this->console->writeLine();
 
         // Display information that the test has been aborted.
@@ -156,14 +234,10 @@ class VerboseConsole extends AbstractReporter
 
     }
 
-    public function onStop(RunEvent $e)
-    {
-        $this->stopped = true;
-    }
-
-
     /**
-     * @param \Zend\Console\Adapter\AdapterInterface $console
+     * Set Console adapter to use
+     *
+     * @param Console $console
      */
     public function setConsole($console)
     {
@@ -174,26 +248,43 @@ class VerboseConsole extends AbstractReporter
     }
 
     /**
-     * @return \Zend\Console\Adapter\AdapterInterface
+     * Get currently used Console adapter
+     *
+     * @return Console
      */
     public function getConsole()
     {
         return $this->console;
     }
 
+    /**
+     * Set if result data should be displayed on the screen
+     *
+     * @param bool $displayData
+     */
     public function setDisplayData($displayData)
     {
-        $this->displayData = $displayData;
+        $this->displayData = (bool)$displayData;
     }
 
+    /**
+     * Get the flag value, if result data should be displayed on the screen
+     * @return bool
+     */
     public function getDisplayData()
     {
         return $this->displayData;
     }
 
-
-
-    public function strColPad($string, $width, $padding)
+    /**
+     * Apply padding and word-wrapping for a string.
+     *
+     * @param string $string  The string to transform
+     * @param int    $width   Maximum width at which the string should be wrapped to the next line
+     * @param int    $padding The left-side padding to apply
+     * @return string The padded and wrapped string
+     */
+    protected function strColPad($string, $width, $padding)
     {
         $string = $this->stringUtils->wordWrap($string, $width, PHP_EOL, true);
         $lines = explode(PHP_EOL, $string);
@@ -203,6 +294,4 @@ class VerboseConsole extends AbstractReporter
 
         return join(PHP_EOL, $lines);
     }
-
-
 }

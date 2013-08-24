@@ -17,14 +17,18 @@ interface ConfigInterface
     public function getBreakOnFailure();
 
     /**
-     * @return string
+     * Get current severity of error that will result in a check failing.
+     *
+     * @return int
      */
-    public function getDefaultRunListenerClass();
+    public function getCatchErrorSeverity();
 
     /**
-     * Set the default class to create run listener.
+     * Set severity of error that will result in a check failing. Defaults to:
+     *  E_WARNING|E_PARSE|E_USER_ERROR|E_USER_WARNING|E_RECOVERABLE_ERROR
      *
-     * @param string $defaultRunListenerClass
+     * @param int $catchErrorSeverity
      */
-    public function setDefaultRunListenerClass($defaultRunListenerClass);
+    public function setCatchErrorSeverity($catchErrorSeverity);
+
 }
