@@ -138,7 +138,7 @@ class CreateController extends AbstractActionController
 
         $dir = $path . "/module/$module/view/" . strtolower($module) . "/" . strtolower($name);
         if (!file_exists($dir)) {
-            mkdir($dir);
+            mkdir($dir, 0777, true);
         }
 
         $phtml = false;
@@ -179,13 +179,9 @@ class CreateController extends AbstractActionController
 
         $viewfolder = strtolower($name);
         $name = ucfirst($name);
-        mkdir("$path/module/$name");
-        mkdir("$path/module/$name/config");
-        mkdir("$path/module/$name/src");
-        mkdir("$path/module/$name/src/$name");
-        mkdir("$path/module/$name/src/$name/Controller");
-        mkdir("$path/module/$name/view");
-        mkdir("$path/module/$name/view/$viewfolder");
+        mkdir("$path/module/$name/config", 0777, true);
+        mkdir("$path/module/$name/src/$name/Controller", 0777, true);
+        mkdir("$path/module/$name/view/$viewfolder", 0777, true);
 
         // Create the Module.php
         file_put_contents("$path/module/$name/Module.php", Skeleton::getModule($name));
