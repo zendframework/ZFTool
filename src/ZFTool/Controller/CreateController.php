@@ -176,7 +176,8 @@ class CreateController extends AbstractActionController
                 "The module $name already exists."
             );
         }
-
+        
+        $viewfolder = strtolower($name);
         $name = ucfirst($name);
         mkdir("$path/module/$name");
         mkdir("$path/module/$name/config");
@@ -184,6 +185,7 @@ class CreateController extends AbstractActionController
         mkdir("$path/module/$name/src/$name");
         mkdir("$path/module/$name/src/$name/Controller");
         mkdir("$path/module/$name/view");
+        mkdir("$path/module/$name/view/$viewfolder"); 
 
         // Create the Module.php
         file_put_contents("$path/module/$name/Module.php", Skeleton::getModule($name));
