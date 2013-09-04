@@ -9,6 +9,7 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
  * Listing of loaded modules
  * Create a new project (install the ZF2 skeleton application)
  * Create a new module
+ * Create a new controller
  * [Application diagnostics](docs/DIAGNOSTICS.md)
 
 ## Requirements
@@ -58,19 +59,19 @@ You can also generate the zftool.phar using the `bin/create-phar` command as rep
 
     <name>              The name of the module to be created
     <path>              The path to the root folder of the ZF2 application (optional)
-    
+
 ### Controller creation
-            
+
     zf.php create controller <name> <module>
-            
+
     <name>              The name of the controller to be created
     <module>            The module in which the controller should be created
 
 ### Application configuration
-    
+
     zf.php config list                  list all configuration option
-    zf.php config get <name>            display a single config value, i.e. "config get db.host" 
-    zf.php config set <name> <value>    set a single config value (use only to change scalar values)   
+    zf.php config get <name>            display a single config value, i.e. "config get db.host"
+    zf.php config set <name> <value>    set a single config value (use only to change scalar values)
 
 ### Classmap generator
 
@@ -111,4 +112,3 @@ Note: If the above fails due to permissions, run the mv line again with sudo.
  * Inspection of application configuration. [DONE]
  * Deploying zf2 skeleton applications. [DONE]
  * Reading and writing app configuration. [DONE]
-
