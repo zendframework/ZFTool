@@ -10,6 +10,7 @@ It runs from the command line and can be installed as ZF2 module or as PHAR (see
  * Create a new project (install the ZF2 skeleton application)
  * Create a new module
  * Create a new controller
+ * Create a new action in a controller
  * [Application diagnostics](docs/DIAGNOSTICS.md)
 
 ## Requirements
@@ -60,12 +61,20 @@ You can also generate the zftool.phar using the `bin/create-phar` command as rep
     <name>              The name of the module to be created
     <path>              The path to the root folder of the ZF2 application (optional)
 
-### Controller creation
+### Controller creation:
+	zf.php create controller <name> <module> [<path>]
 
-    zf.php create controller <name> <module>
+	<name>      The name of the controller to be created                                                                                     
+	<module>    The module in which the controller should be created                                                                         
+	<path>      The root path of a ZF2 application where to create the controller                                                            
 
-    <name>              The name of the controller to be created
-    <module>            The module in which the controller should be created
+### Action creation:
+	zf.php create action <name> <controller> <module> [<path>]
+
+	<name>          The name of the action to be created                                                                                     
+	<controller>    The name of the controller in which the action should be created                                                         
+	<module>        The module containing the controller                                                                                     
+	<path>          The root path of a ZF2 application where to create the action     
 
 ### Application configuration
 
