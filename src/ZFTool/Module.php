@@ -88,9 +88,9 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             array('<path>', 'The root path of a ZF2 application where to create the controller'),
 
             'Action creation:',
-            'create action <name> <controller> <module> [<path>]' => 'create an action in a controller',
+            'create action <name> <controllerName> <module> [<path>]' => 'create an action in a controller',
             array('<name>', 'The name of the action to be created'),
-            array('<controller>', 'The name of the controller in which the action should be created'),
+            array('<controllerName>', 'The name of the controller in which the action should be created'),
             array('<module>', 'The module containing the controller'),
             array('<path>', 'The root path of a ZF2 application where to create the action'),
 
