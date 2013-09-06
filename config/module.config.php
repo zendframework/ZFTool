@@ -101,10 +101,19 @@ return array(
                 ),
                 'zftool-create-controller' => array(
                     'options' => array(
-                        'route'    => 'create controller <name> <module>',
+                        'route'    => 'create controller <name> <module> [<path>]',
                         'defaults' => array(
                             'controller' => 'ZFTool\Controller\Create',
                             'action'     => 'controller',
+                        ),
+                    ),
+                ),
+                'zftool-create-action' => array(
+                    'options' => array(
+                        'route'    => 'create action <name> <controller> <module>',
+                        'defaults' => array(
+                            'controller' => 'ZFTool\Controller\Create',
+                            'action'     => 'method',
                         ),
                     ),
                 ),
