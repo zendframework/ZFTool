@@ -97,7 +97,7 @@ class CreateController extends AbstractActionController
         $request = $this->getRequest();
         $name    = $request->getParam('name');
         $module  = $request->getParam('module');
-        $path    = '.';
+        $path    = $request->getParam('path', '.');
 
         if (!file_exists("$path/module") || !file_exists("$path/config/application.config.php")) {
             return $this->sendError(
@@ -151,6 +151,81 @@ class CreateController extends AbstractActionController
             $console->writeLine("The controller $name has been created in module $module.", Color::GREEN);
         } else {
             $console->writeLine("There was an error during controller creation.", Color::RED);
+        }
+    }
+
+    public function methodAction()
+    {
+		$console->writeLine("Creating action '$action' in controller '$module\\$controller'.", Color::YELLOW);
+
+    	$console = $this->getServiceLocator()->get('console');
+        $tmpDir  = sys_get_temp_dir();
+
+        $request = $this->getRequest();
+        $name    = $request->getParam('name');
+        $ctrl    = $request->getParam('controller');
+        $module  = $request->getParam('module');
+        $path    = $request->getParam('path', '.');
+
+        if (!file_exists("$path/module") || !file_exists("$path/config/application.config.php")) {
+            return $this->sendError(
+                "The path $path doesn't contain a ZF2 application. I cannot create a module here."
+            );
+        }
+        if (!file_exists("$path/module/$module/src/$module/Controller/$ctrl")) {
+            return $this->sendError(
+                "The controller $name does not exists in module $module."
+            );
+        }
+
+        $ucName     = ucfirst($ctrl);
+        $ctrlPath   = $path . '/module/' . $module . '/src/' . $module . '/Controller/' . $ucName.'Controller.php';
+        $controller = $ucName . 'Controller';
+        $action     = strtolower($name);
+
+        $code = new Generator\FileGenerate::fromRelection(
+        	new Reflection\FileReflection($ctrlPath)
+        );
+
+        $new_code = Generator\ClassGenerator::fromReflection($class);
+
+        if ($new_code->hasMethod($action . 'Action')) {
+        	return $this->sendError(
+        		"The action $action already exists in controller $ctrl of module $module."
+        	);
+        }
+
+        $new_code->addMethods(array(
+			new Generator\MethodGenerator(
+				$action . 'Action',
+				array(),
+				Generator\MethodGenerator::FLAG_PUBLIC,
+				'return new ViewModel();'
+			),
+		));
+
+        $file = new Generator\FileGenerator(
+            array(
+                'classes'  => array($new_code),
+            )
+        );
+
+        $make_phtml = true;
+        $phtmlPath  = $path . "/module/$module/view/" . strtolower($module) . "/" . strtolower($ctrl) . '/' . $action . '.phtml';
+        if (file_exists($phtmlPath)) {
+            $make_phtml = false;
+        }
+
+        if ($make_phtml) {
+	        if (file_put_contents($phtmlPath, 'Action "'.$action.'", controller "'.$ucName.'", module "'.$module.'".')) {
+	            $phtml = true;
+	        }
+	    }
+
+        if (file_put_contents($ctrlPath, $file->generate())) {
+            $console->writeLine("The action $action has been created in controller $module\\$controller.", Color::GREEN);
+        } else {
+            $console->writeLine("There was an error during action creation.", Color::RED);
         }
     }
 
