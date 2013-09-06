@@ -110,7 +110,7 @@ return array(
                 ),
                 'zftool-create-action' => array(
                     'options' => array(
-                        'route'    => 'create action <name> <controller> <module>',
+                        'route'    => 'create action <name> <controllerName> <module>',
                         'defaults' => array(
                             'controller' => 'ZFTool\Controller\Create',
                             'action'     => 'method',

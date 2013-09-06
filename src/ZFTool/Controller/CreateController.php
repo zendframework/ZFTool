@@ -160,33 +160,34 @@ class CreateController extends AbstractActionController
 
     public function methodAction()
     {
-        $request    = $this->getRequest();
-        $action     = $request->getParam('name');
-        $controller = $request->getParam('controller');
-        $module     = $request->getParam('module');
-        $path       = $request->getParam('path', '.');
+        $console        = $this->getServiceLocator()->get('console');
+        $request        = $this->getRequest();
+        $action         = $request->getParam('name');
+        $controller     = $request->getParam('controllerName');
+        $module         = $request->getParam('module');
+        $path           = $request->getParam('path', '.');
+        $ucController   = ucfirst($controller);
+        $controllerPath = sprintf('%s/module/%s/src/%s/Controller/%sController.php', $path, $module, $module, $ucController);
+        $class          = sprintf('%s\\Controller\\%sController', $module, $ucController);
+
 
         $console->writeLine("Creating action '$action' in controller '$module\\Controller\\$controller'.", Color::YELLOW);
-
-        $console = $this->getServiceLocator()->get('console');
-        $tmpDir  = sys_get_temp_dir();
 
         if (!file_exists("$path/module") || !file_exists("$path/config/application.config.php")) {
             return $this->sendError(
                 "The path $path doesn't contain a ZF2 application. I cannot create a controller action."
             );
         }
-        if (!file_exists("$path/module/$module/src/$module/Controller/$controller")) {
+        if (!file_exists($controllerPath)) {
             return $this->sendError(
                 "The controller $controller does not exists in module $module. I cannot create a controller action."
             );
         }
 
-        $ucController   = ucfirst($controller);
-        $controllerPath = sprintf('%s/module/%s/src/%s/Controller/%sController.php', $path, $module, $module, $ucController);
-        $class          = sprintf('%s\\Controller\\%sController', $module, $ucController);
+        $fileReflection  = new Reflection\FileReflection($controllerPath, true);
+        $classReflection = $fileReflection->getClass($class);
 
-        $classGenerator = Generator\ClassGenerator::fromReflection($class);
+        $classGenerator = Generator\ClassGenerator::fromReflection($classReflection);
 
         if ($classGenerator->hasMethod($action . 'Action')) {
             return $this->sendError(
@@ -227,7 +228,7 @@ class CreateController extends AbstractActionController
             }
         }
 
-        if (file_put_contents($controllerPath, $file->generate())) {
+        if (file_put_contents($controllerPath, $fileGenerator->generate())) {
             $console->writeLine(sprintf('The action %s has been created in controller %s\\Controller\\%s.', $action, $module, $controller), Color::GREEN);
         } else {
             $console->writeLine("There was an error during action creation.", Color::RED);
