@@ -137,10 +137,10 @@ class CreateController extends AbstractActionController
             )
         );
 
-		$filter = new CamelCaseToDashFilter();
+        $filter = new CamelCaseToDashFilter();
         $viewfolder = strtolower($filter->filter($module));
-		
-        $dir = $path . "/module/$module/view/$viewfolder/" . strtolower($name);
+
+        $dir = $path . "/module/$module/view/$viewfolder/" . strtolower($filter->filter($name));
         if (!file_exists($dir)) {
             mkdir($dir, 0777, true);
         }
@@ -160,46 +160,41 @@ class CreateController extends AbstractActionController
 
     public function methodAction()
     {
-        $console->writeLine("Creating action '$action' in controller '$module\\$controller'.", Color::YELLOW);
+        $request    = $this->getRequest();
+        $action     = $request->getParam('name');
+        $controller = $request->getParam('controller');
+        $module     = $request->getParam('module');
+        $path       = $request->getParam('path', '.');
+
+        $console->writeLine("Creating action '$action' in controller '$module\\Controller\\$controller'.", Color::YELLOW);
 
         $console = $this->getServiceLocator()->get('console');
         $tmpDir  = sys_get_temp_dir();
 
-        $request = $this->getRequest();
-        $name    = $request->getParam('name');
-        $ctrl    = $request->getParam('controller');
-        $module  = $request->getParam('module');
-        $path    = $request->getParam('path', '.');
-
         if (!file_exists("$path/module") || !file_exists("$path/config/application.config.php")) {
             return $this->sendError(
-                "The path $path doesn't contain a ZF2 application. I cannot create a module here."
+                "The path $path doesn't contain a ZF2 application. I cannot create a controller action."
             );
         }
-        if (!file_exists("$path/module/$module/src/$module/Controller/$ctrl")) {
+        if (!file_exists("$path/module/$module/src/$module/Controller/$controller")) {
             return $this->sendError(
-                "The controller $name does not exists in module $module."
+                "The controller $controller does not exists in module $module. I cannot create a controller action."
             );
         }
 
-        $ucName     = ucfirst($ctrl);
-        $ctrlPath   = $path . '/module/' . $module . '/src/' . $module . '/Controller/' . $ucName.'Controller.php';
-        $controller = $ucName . 'Controller';
-        $action     = strtolower($name);
+        $ucController   = ucfirst($controller);
+        $controllerPath = sprintf('%s/module/%s/src/%s/Controller/%sController.php', $path, $module, $module, $ucController);
+        $class          = sprintf('%s\\Controller\\%sController', $module, $ucController);
 
-        $code = new Generator\FileGenerate::fromRelection(
-            new Reflection\FileReflection($ctrlPath)
-        );
+        $classGenerator = Generator\ClassGenerator::fromReflection($class);
 
-        $new_code = Generator\ClassGenerator::fromReflection($class);
-
-        if ($new_code->hasMethod($action . 'Action')) {
+        if ($classGenerator->hasMethod($action . 'Action')) {
             return $this->sendError(
-                "The action $action already exists in controller $ctrl of module $module."
+                "The action $action already exists in controller $controller of module $module."
             );
         }
 
-        $new_code->addMethods(array(
+        $classGenerator->addMethods(array(
             new Generator\MethodGenerator(
                 $action . 'Action',
                 array(),
@@ -208,26 +203,32 @@ class CreateController extends AbstractActionController
             ),
         ));
 
-        $file = new Generator\FileGenerator(
+        $fileGenerator = new Generator\FileGenerator(
             array(
-                'classes'  => array($new_code),
+                'classes'  => array($classGenerator),
             )
         );
 
-        $make_phtml = true;
-        $phtmlPath  = $path . "/module/$module/view/" . strtolower($module) . "/" . strtolower($ctrl) . '/' . $action . '.phtml';
-        if (file_exists($phtmlPath)) {
-            $make_phtml = false;
-        }
-
-        if ($make_phtml) {
-            if (file_put_contents($phtmlPath, 'Action "'.$action.'", controller "'.$ucName.'", module "'.$module.'".')) {
-                $phtml = true;
+        $filter    = new CamelCaseToDashFilter();
+        $phtmlPath = sprintf(
+            '%s/module/%s/view/%s/%s/%s.phtml',
+            $path,
+            $module,
+            strtolower($filter->filter($module)),
+            strtolower($filter->filter($controller)),
+            strtolower($filter->filter($action))
+        );
+        if (!file_exists($phtmlPath)) {
+            $contents = sprintf("Module: %s\nController: %s\nAction: %s", $module, $controller, $action);
+            if (file_put_contents($phtmlPath, $contents)) {
+                $console->writeLine(sprintf("Created view script at %s", $phtmlPath), Color::GREEN);
+            } else {
+                $console->writeLine(sprintf("An error occurred when attempting to create view script at location %s", $phtmlPath), Color::RED);
             }
         }
 
-        if (file_put_contents($ctrlPath, $file->generate())) {
-            $console->writeLine("The action $action has been created in controller $module\\$controller.", Color::GREEN);
+        if (file_put_contents($controllerPath, $file->generate())) {
+            $console->writeLine(sprintf('The action %s has been created in controller %s\\Controller\\%s.', $action, $module, $controller), Color::GREEN);
         } else {
             $console->writeLine("There was an error during action creation.", Color::RED);
         }
@@ -256,9 +257,9 @@ class CreateController extends AbstractActionController
             );
         }
 
-		$filter = new CamelCaseToDashFilter();
+        $filter = new CamelCaseToDashFilter();
         $viewfolder = strtolower($filter->filter($name));
-		
+
         $name = ucfirst($name);
         mkdir("$path/module/$name/config", 0777, true);
         mkdir("$path/module/$name/src/$name/Controller", 0777, true);
