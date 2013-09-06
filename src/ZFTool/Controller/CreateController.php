@@ -10,6 +10,7 @@ use ZFTool\Model\Utility;
 use Zend\Console\ColorInterface as Color;
 use Zend\Code\Generator;
 use Zend\Code\Reflection;
+use Zend\Filter\Word\CamelCaseToDash as CamelCaseToDashFilter;
 
 class CreateController extends AbstractActionController
 {
@@ -136,7 +137,10 @@ class CreateController extends AbstractActionController
             )
         );
 
-        $dir = $path . "/module/$module/view/" . strtolower($module) . "/" . strtolower($name);
+		$filter = new CamelCaseToDashFilter();
+        $viewfolder = strtolower($filter->filter($module));
+		
+        $dir = $path . "/module/$module/view/$viewfolder/" . strtolower($name);
         if (!file_exists($dir)) {
             mkdir($dir, 0777, true);
         }
@@ -177,7 +181,9 @@ class CreateController extends AbstractActionController
             );
         }
 
-        $viewfolder = strtolower($name);
+		$filter = new CamelCaseToDashFilter();
+        $viewfolder = strtolower($filter->filter($name));
+		
         $name = ucfirst($name);
         mkdir("$path/module/$name/config", 0777, true);
         mkdir("$path/module/$name/src/$name/Controller", 0777, true);
