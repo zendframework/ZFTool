@@ -156,9 +156,9 @@ class CreateController extends AbstractActionController
 
     public function methodAction()
     {
-		$console->writeLine("Creating action '$action' in controller '$module\\$controller'.", Color::YELLOW);
+        $console->writeLine("Creating action '$action' in controller '$module\\$controller'.", Color::YELLOW);
 
-    	$console = $this->getServiceLocator()->get('console');
+        $console = $this->getServiceLocator()->get('console');
         $tmpDir  = sys_get_temp_dir();
 
         $request = $this->getRequest();
@@ -184,25 +184,25 @@ class CreateController extends AbstractActionController
         $action     = strtolower($name);
 
         $code = new Generator\FileGenerate::fromRelection(
-        	new Reflection\FileReflection($ctrlPath)
+            new Reflection\FileReflection($ctrlPath)
         );
 
         $new_code = Generator\ClassGenerator::fromReflection($class);
 
         if ($new_code->hasMethod($action . 'Action')) {
-        	return $this->sendError(
-        		"The action $action already exists in controller $ctrl of module $module."
-        	);
+            return $this->sendError(
+                "The action $action already exists in controller $ctrl of module $module."
+            );
         }
 
         $new_code->addMethods(array(
-			new Generator\MethodGenerator(
-				$action . 'Action',
-				array(),
-				Generator\MethodGenerator::FLAG_PUBLIC,
-				'return new ViewModel();'
-			),
-		));
+            new Generator\MethodGenerator(
+                $action . 'Action',
+                array(),
+                Generator\MethodGenerator::FLAG_PUBLIC,
+                'return new ViewModel();'
+            ),
+        ));
 
         $file = new Generator\FileGenerator(
             array(
@@ -217,10 +217,10 @@ class CreateController extends AbstractActionController
         }
 
         if ($make_phtml) {
-	        if (file_put_contents($phtmlPath, 'Action "'.$action.'", controller "'.$ucName.'", module "'.$module.'".')) {
-	            $phtml = true;
-	        }
-	    }
+            if (file_put_contents($phtmlPath, 'Action "'.$action.'", controller "'.$ucName.'", module "'.$module.'".')) {
+                $phtml = true;
+            }
+        }
 
         if (file_put_contents($ctrlPath, $file->generate())) {
             $console->writeLine("The action $action has been created in controller $module\\$controller.", Color::GREEN);

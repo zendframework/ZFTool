@@ -109,13 +109,13 @@ return array(
                     ),
                 ),
                 'zftool-create-action' => array(
-                	'options' => array(
-                		'route'    => 'create action <name> <controller> <module>',
-                		'defaults' => array(
-                			'controller' => 'ZFTool\Controller\Create',
-                			'action'     => 'method',
-                		),
-                	),
+                    'options' => array(
+                        'route'    => 'create action <name> <controller> <module>',
+                        'defaults' => array(
+                            'controller' => 'ZFTool\Controller\Create',
+                            'action'     => 'method',
+                        ),
+                    ),
                 ),
                 'zftool-install-zf' => array(
                     'options' => array(
