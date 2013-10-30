@@ -188,6 +188,9 @@ class CreateController extends AbstractActionController
         $classReflection = $fileReflection->getClass($class);
 
         $classGenerator = Generator\ClassGenerator::fromReflection($classReflection);
+        $classGenerator->addUse('Zend\Mvc\Controller\AbstractActionController')
+                       ->addUse('Zend\View\Model\ViewModel')
+                       ->setExtendedClass('AbstractActionController');
 
         if ($classGenerator->hasMethod($action . 'Action')) {
             return $this->sendError(
