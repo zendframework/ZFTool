@@ -367,7 +367,7 @@ return array(
 );
 ````
 
-### SteamWrapperExists
+### StreamWrapperExists
 
 Check if a given stream wrapper (or an array of names) is available. For example:
 
