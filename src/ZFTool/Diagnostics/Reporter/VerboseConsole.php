@@ -7,12 +7,12 @@ use Zend\Console\ColorInterface as Color;
 use Zend\Stdlib\StringUtils;
 use ZendDiagnostics\Check\CheckInterface;
 use ZendDiagnostics\Result\Collection as ResultsCollection;
-use ZendDiagnostics\Result\Failure;
+use ZendDiagnostics\Result\FailureInterface as Failure;
 use ZendDiagnostics\Result\ResultInterface;
-use ZendDiagnostics\Result\Success;
-use ZendDiagnostics\Result\Warning;
+use ZendDiagnostics\Result\SkipInterface as Skip;
+use ZendDiagnostics\Result\SuccessInterface as Success;
+use ZendDiagnostics\Result\WarningInterface as Warning;
 use ZendDiagnostics\Runner\Reporter\ReporterInterface;
-
 
 class VerboseConsole implements ReporterInterface
 {
@@ -52,7 +52,7 @@ class VerboseConsole implements ReporterInterface
     protected $displayData = false;
 
     /**
-     * Has the testing been stopped before finishing ?
+     * Has the checking been stopped before finishing ?
      *
      * @var bool
      */
@@ -92,9 +92,10 @@ class VerboseConsole implements ReporterInterface
      * method returns false, the Check will not be performed (will be skipped).
      *
      * @param  CheckInterface $check Check instance that is about to be performed.
+     * @param  bool           $alias The alias being targeted by the check
      * @return bool|void      Return false to prevent check from happening
      */
-    public function onBeforeRun(CheckInterface $check) {}
+    public function onBeforeRun(CheckInterface $check, $alias = null) {}
 
     /**
      * This method is called every time a Check has been performed. If this method
@@ -103,9 +104,10 @@ class VerboseConsole implements ReporterInterface
      *
      * @param  CheckInterface  $check  A Check instance that has just finished running
      * @param  ResultInterface $result Result for that particular check instance
+     * @param  bool            $alias  The alias being targeted by the check
      * @return bool|void       Return false to prevent from running additional Checks
      */
-    public function onAfterRun(CheckInterface $check, ResultInterface $result)
+    public function onAfterRun(CheckInterface $check, ResultInterface $result, $alias = null)
     {
         $descr = ' ' . $check->getLabel();
         if ($message = $result->getMessage()) {
@@ -152,6 +154,15 @@ class VerboseConsole implements ReporterInterface
                     '       '
                 ), Color::YELLOW
             );
+        } elseif ($result instanceof Skip) {
+            $this->console->write(' SKIP ', Color::NORMAL, Color::YELLOW);
+            $this->console->writeLine(
+                $this->strColPad(
+                    $descr,
+                    $this->width - 7,
+                    '       '
+                ), Color::YELLOW
+            );
         } else {
             $this->console->write(' ???? ', Color::NORMAL, Color::YELLOW);
             $this->console->writeLine(
@@ -186,7 +197,7 @@ class VerboseConsole implements ReporterInterface
     {
         $this->console->writeLine();
 
-        // Display information that the test has been aborted.
+        // Display information that the check has been aborted.
         if ($this->stopped) {
             $this->console->writeLine('Diagnostics aborted because of a failure.', Color::RED);
         }
@@ -194,17 +205,21 @@ class VerboseConsole implements ReporterInterface
 
         // Display a summary line
         if ($results->getFailureCount() == 0 && $results->getWarningCount() == 0 && $results->getUnknownCount() == 0) {
-            $line = 'OK (' . $this->total . ' diagnostic tests)';
+            $line = 'OK (' . $this->total . ' diagnostic checks)';
             $this->console->writeLine(
                 str_pad($line, $this->width - 1, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::GREEN
             );
         } elseif ($results->getFailureCount() == 0) {
             $line = $results->getWarningCount() . ' warnings, ';
-            $line .= $results->getSuccessCount() . ' successful tests';
+            $line .= $results->getSuccessCount() . ' successful checks';
+
+            if ($results->getSkipCount() > 0) {
+                $line .= ', ' . $results->getSkipCount() . ' skipped checks';
+            }
 
             if ($results->getUnknownCount() > 0) {
-                $line .= ', ' . $results->getUnknownCount() . ' unknown test results';
+                $line .= ', ' . $results->getUnknownCount() . ' unknown check results';
             }
 
             $line .= '.';
@@ -216,10 +231,14 @@ class VerboseConsole implements ReporterInterface
         } else {
             $line = $results->getFailureCount() . ' failures, ';
             $line .= $results->getWarningCount() . ' warnings, ';
-            $line .= $results->getSuccessCount() . ' successful tests';
+            $line .= $results->getSuccessCount() . ' successful checks';
+
+            if ($results->getSkipCount() > 0) {
+                $line .= ', ' . $results->getSkipCount() . ' skipped checks';
+            }
 
             if ($results->getUnknownCount() > 0) {
-                $line .= ', ' . $results->getUnknownCount() . ' unknown test results';
+                $line .= ', ' . $results->getUnknownCount() . ' unknown check results';
             }
 
             $line .= '.';

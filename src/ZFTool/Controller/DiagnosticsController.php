@@ -2,6 +2,7 @@
 
 namespace ZFTool\Controller;
 
+use Zend\Console\ColorInterface;
 use ZendDiagnostics\Check\Callback;
 use ZendDiagnostics\Check\CheckInterface;
 use ZFTool\Diagnostics\Exception\RuntimeException;
@@ -10,14 +11,11 @@ use ZFTool\Diagnostics\Reporter\VerboseConsole;
 use ZFTool\Diagnostics\Runner;
 use Zend\Console\Request as ConsoleRequest;
 use Zend\Mvc\Controller\AbstractActionController;
-use Zend\Version\Version;
-use ZFTool\Module;
 use Zend\View\Model\ConsoleModel;
 use Zend\View\Model\ViewModel;
 
 class DiagnosticsController extends AbstractActionController
 {
-
     public function runAction()
     {
         $sm = $this->getServiceLocator();
@@ -28,13 +26,11 @@ class DiagnosticsController extends AbstractActionController
         $config = $sm->get('Configuration');
         $mm = $sm->get('ModuleManager');
 
-        // TODO: After ZF 2.2.0 is out, remove short flags checks.
-        $verbose        = $this->params()->fromRoute('verbose', false) || $this->params()->fromRoute('v', false);
-        $debug          = $this->params()->fromRoute('debug', false) || $this->params()->fromRoute('d', false);
-        $quiet          = !$verbose && !$debug &&
-             ( $this->params()->fromRoute('quiet', false) || $this->params()->fromRoute('q', false) );
-        $breakOnFailure = $this->params()->fromRoute('break', false) || $this->params()->fromRoute('b', false);
-        $checkGroupName  = $this->params()->fromRoute('testGroupName', false);
+        $verbose        = $this->params()->fromRoute('verbose', false);
+        $debug          = $this->params()->fromRoute('debug', false);
+        $quiet          = !$verbose && !$debug && $this->params()->fromRoute('quiet', false);
+        $breakOnFailure = $this->params()->fromRoute('break', false);
+        $checkGroupName = $this->params()->fromRoute('filter', false);
 
         // Get basic diag configuration
         $config = isset($config['diagnostics']) ? $config['diagnostics'] : array();
@@ -48,20 +44,46 @@ class DiagnosticsController extends AbstractActionController
                     $config[$moduleName] = $checks;
                 }
 
-                // Exit the loop early if we found test definitions for
-                // the only test group that we want to run.
+                // Exit the loop early if we found check definitions for
+                // the only check group that we want to run.
                 if ($checkGroupName && $moduleName == $checkGroupName) {
                     break;
                 }
             }
         }
 
-        // Filter array if a test group name has been provided
+        // Filter array if a check group name has been provided
         if ($checkGroupName) {
-            $config = array_intersect_key($config, array($checkGroupName => 1));
+            $config = array_intersect_ukey($config, array($checkGroupName => 1), 'strcasecmp');
+
+            if(empty($config)) {
+                $m = new ConsoleModel();
+                $m->setResult($console->colorize(sprintf(
+                    "Unable to find a group of diagnostic checks called \"%s\". Try to use module name (i.e. \"%s\").\n",
+                    $checkGroupName,
+                    'Application'
+                ), ColorInterface::YELLOW));
+                $m->setErrorLevel(1);
+                return $m;
+            }
         }
 
-        // Analyze test definitions and construct test instances
+        // Check if there are any diagnostic checks defined
+        if(empty($config)) {
+            $m = new ConsoleModel();
+            $m->setResult(
+                $console->colorize(
+                    "There are no diagnostic checks currently enabled for this application - please add one or more " .
+                    "entries into config \"diagnostics\" array or add getDiagnostics() method to your Module class. " .
+                    "\n\nMore info: https://github.com/zendframework/ZFTool/blob/master/docs/" .
+                    "DIAGNOSTICS.md#adding-checks-to-your-module\n"
+                , ColorInterface::YELLOW)
+            );
+            $m->setErrorLevel(1);
+            return $m;
+        }
+
+        // Analyze check definitions and construct check instances
         $checkCollection = array();
         foreach ($config as $checkGroupName => $checks) {
             foreach ($checks as $checkLabel => $check) {
@@ -81,11 +103,11 @@ class DiagnosticsController extends AbstractActionController
                     continue;
                 }
 
-                // Handle test object instance.
+                // Handle check object instance.
                 if (is_object($check)) {
                     if (!$check instanceof CheckInterface) {
                         throw new RuntimeException(
-                            'Cannot use object of class "' . get_class($check). '" as test. '.
+                            'Cannot use object of class "' . get_class($check). '" as check. '.
                             'Expected instance of ZendDiagnostics\Check\CheckInterface'
                         );
 
@@ -103,11 +125,11 @@ class DiagnosticsController extends AbstractActionController
                 if (is_array($check)) {
                     if (!count($check)) {
                         throw new RuntimeException(
-                            'Cannot use an empty array() as test definition in "'.$checkGroupName.'"'
+                            'Cannot use an empty array() as check definition in "'.$checkGroupName.'"'
                         );
                     }
 
-                    // extract test identifier and store the remainder of array as parameters
+                    // extract check identifier and store the remainder of array as parameters
                     $testName = array_shift($check);
                     $params = $check;
 
@@ -117,20 +139,25 @@ class DiagnosticsController extends AbstractActionController
 
                 } else {
                     throw new RuntimeException(
-                        'Cannot understand diagnostic test definition "' . gettype($check). '" in "'.$checkGroupName.'"'
+                        'Cannot understand diagnostic check definition "' . gettype($check). '" in "'.$checkGroupName.'"'
                     );
                 }
 
-                // Try to expand test identifier using Service Locator
+                // Try to expand check identifier using Service Locator
                 if (is_string($testName) && $sm->has($testName)) {
                     $check = $sm->get($testName);
 
-                // Try to use the built-in check class
+                // Try to use the ZendDiagnostics namespace
                 } elseif (is_string($testName) && class_exists('ZendDiagnostics\\Check\\' . $testName)) {
                     $class = new \ReflectionClass('ZendDiagnostics\\Check\\' . $testName);
                     $check = $class->newInstanceArgs($params);
 
-                // Check if provided with a callable inside the array
+                // Try to use the ZFTool namespace
+                } elseif (is_string($testName) && class_exists('ZFTool\\Diagnostics\\Check\\' . $testName)) {
+                    $class = new \ReflectionClass('ZFTool\\Diagnostics\\Check\\' . $testName);
+                    $check = $class->newInstanceArgs($params);
+
+                // Check if provided with a callable inside an array
                 } elseif (is_callable($testName)) {
                     $check = new Callback($testName, $params);
                     if ($checkLabel) {
@@ -140,21 +167,21 @@ class DiagnosticsController extends AbstractActionController
                     $checkCollection[] = $check;
                     continue;
 
-                // Try to expand test using class name
+                // Try to expand check using class name
                 } elseif (is_string($testName) && class_exists($testName)) {
                     $class = new \ReflectionClass($testName);
                     $check = $class->newInstanceArgs($params);
 
                 } else {
                     throw new RuntimeException(
-                        'Cannot find test class or service with the name of "' . $testName . '" ('.$checkGroupName.')'
+                        'Cannot find check class or service with the name of "' . $testName . '" ('.$checkGroupName.')'
                     );
                 }
 
                 if (!$check instanceof CheckInterface) {
                     // not a real check
                     throw new RuntimeException(
-                        'The test object of class '.get_class($check).' does not implement '.
+                        'The check object of class '.get_class($check).' does not implement '.
                         'ZendDiagnostics\Check\CheckInterface'
                     );
                 }
@@ -168,7 +195,7 @@ class DiagnosticsController extends AbstractActionController
             }
         }
 
-        // Configure test runner
+        // Configure check runner
         $runner = new Runner();
         $runner->addChecks($checkCollection);
         $runner->getConfig()->setBreakOnFailure($breakOnFailure);

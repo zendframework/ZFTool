@@ -3,7 +3,6 @@ namespace ZFToolTest\Diagnostics\Reporter;
 
 use ArrayObject;
 use Zend\Console\Charset\Ascii;
-use Zend\EventManager\EventManager;
 use ZendDiagnostics\Result\Collection;
 use ZendDiagnostics\Result\Failure;
 use ZendDiagnostics\Result\Success;
@@ -48,7 +47,6 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
     public function testDummyReporter()
     {
         $reporter = new DummyReporter();
-
     }
     public function testConsoleSettingGetting()
     {
@@ -218,7 +216,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         ob_clean();
 
         $this->reporter->onFinish($results);
-        $this->assertStringStartsWith('OK (20 diagnostic tests)', trim(ob_get_clean()));
+        $this->assertStringStartsWith('OK (20 diagnostic checks)', trim(ob_get_clean()));
     }
 
     public function testSummaryWithWarnings()
@@ -241,7 +239,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         ob_clean();
 
         $this->reporter->onFinish($results);
-        $this->assertStringStartsWith('5 warnings, 15 successful tests', trim(ob_get_clean()));
+        $this->assertStringStartsWith('5 warnings, 15 successful checks', trim(ob_get_clean()));
     }
 
     public function testSummaryWithFailures()
@@ -269,7 +267,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         ob_clean();
 
         $this->reporter->onFinish($results);
-        $this->assertStringStartsWith('5 failures, 5 warnings, 15 successful tests', trim(ob_get_clean()));
+        $this->assertStringStartsWith('5 failures, 5 warnings, 15 successful checks', trim(ob_get_clean()));
     }
 
     public function testSummaryWithUnknowns()
@@ -297,7 +295,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         ob_clean();
 
         $this->reporter->onFinish($results);
-        $this->assertStringMatchesFormat('%A5 unknown test results%A', trim(ob_get_clean()));
+        $this->assertStringMatchesFormat('%A5 unknown check results%A', trim(ob_get_clean()));
     }
 
     public function testWarnings()
@@ -319,7 +317,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
         $this->reporter->onFinish($results);
         $this->assertStringMatchesFormat(
-            '%AWarning: Always Successful Test%wfoo',
+            '%AWarning: Always Successful Check%wfoo',
             trim(ob_get_clean())
         );
     }
@@ -343,7 +341,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
         $this->reporter->onFinish($results);
         $this->assertStringMatchesFormat(
-            '%AFailure: Always Successful Test%wbar',
+            '%AFailure: Always Successful Check%wbar',
             trim(ob_get_clean())
         );
     }
@@ -367,7 +365,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
         $this->reporter->onFinish($results);
         $this->assertStringMatchesFormat(
-            '%AUnknown result ZFToolTest\Diagnostics\TestAsset\UnknownResult: Always Successful Test%wbaz%A',
+            '%AUnknown result ZFToolTest\Diagnostics\TestAsset\UnknownResult: Always Successful Check%wbaz%A',
             trim(ob_get_clean())
         );
     }

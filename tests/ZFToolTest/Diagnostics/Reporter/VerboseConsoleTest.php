@@ -68,12 +68,12 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
 
         $result = new Success();
         $this->reporter->onAfterRun($checks[0], $result);
-        $this->assertEquals('  OK   Always Successful Test' . PHP_EOL, ob_get_clean());
+        $this->assertEquals('  OK   Always Successful Check' . PHP_EOL, ob_get_clean());
 
         ob_start();
         $result = new Success('this is a message');
         $this->reporter->onAfterRun($checks[1], $result);
-        $this->assertEquals('  OK   Always Successful Test: this is a message' . PHP_EOL, ob_get_clean());
+        $this->assertEquals('  OK   Always Successful Check: this is a message' . PHP_EOL, ob_get_clean());
     }
 
     public function testWarningProgress()
@@ -89,12 +89,12 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
 
         $result = new Warning();
         $this->reporter->onAfterRun($checks[0], $result);
-        $this->assertEquals(' WARN  Always Successful Test' . PHP_EOL, ob_get_clean());
+        $this->assertEquals(' WARN  Always Successful Check' . PHP_EOL, ob_get_clean());
 
         ob_start();
         $result = new Warning('this is a message');
         $this->reporter->onAfterRun($checks[1], $result);
-        $this->assertEquals(' WARN  Always Successful Test: this is a message' . PHP_EOL, ob_get_clean());
+        $this->assertEquals(' WARN  Always Successful Check: this is a message' . PHP_EOL, ob_get_clean());
     }
 
     public function testFailureProgress()
@@ -110,12 +110,12 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
 
         $result = new Failure();
         $this->reporter->onAfterRun($checks[0], $result);
-        $this->assertEquals(' FAIL  Always Successful Test' . PHP_EOL, ob_get_clean());
+        $this->assertEquals(' FAIL  Always Successful Check' . PHP_EOL, ob_get_clean());
 
         ob_start();
         $result = new Failure('this is a message');
         $this->reporter->onAfterRun($checks[1], $result);
-        $this->assertEquals(' FAIL  Always Successful Test: this is a message' . PHP_EOL, ob_get_clean());
+        $this->assertEquals(' FAIL  Always Successful Check: this is a message' . PHP_EOL, ob_get_clean());
     }
 
     public function testUnknownSymbols()
@@ -131,12 +131,12 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
 
         $result = new Unknown();
         $this->reporter->onAfterRun($checks[0], $result);
-        $this->assertEquals(' ????  Always Successful Test' . PHP_EOL, ob_get_clean());
+        $this->assertEquals(' ????  Always Successful Check' . PHP_EOL, ob_get_clean());
 
         ob_start();
         $result = new Unknown('this is a message');
         $this->reporter->onAfterRun($checks[1], $result);
-        $this->assertEquals(' ????  Always Successful Test: this is a message' . PHP_EOL, ob_get_clean());
+        $this->assertEquals(' ????  Always Successful Check: this is a message' . PHP_EOL, ob_get_clean());
     }
 
     public function testInfoOverflow()
@@ -158,7 +158,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
 
         $this->reporter->onAfterRun($checks[0], $result);
         $this->assertEquals(
-            '  OK   Always Successful Test: foo foo' . PHP_EOL .
+            '  OK   Always Successful Check: foo foo' . PHP_EOL .
             '       foo foo foo foo foo foo foo foo' . PHP_EOL .
             '       foo foo foo foo foo foo foo'     . PHP_EOL
             , ob_get_clean()
@@ -171,7 +171,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
 
         $this->reporter->onAfterRun($checks[1], $result);
         $this->assertEquals(
-            ' FAIL  Always Successful Test:'           . PHP_EOL .
+            ' FAIL  Always Successful Check:'           . PHP_EOL .
             '       foofoofoofoofoofoofoofoofoofoofoo' . PHP_EOL .
             '       foofoofoofoofoofoofoofoofoofoofoo' . PHP_EOL .
             '       foo'                               . PHP_EOL
@@ -197,7 +197,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
         $result = new Success('foo', array('1',2,3));
         $this->reporter->onAfterRun($checks[0], $result);
         $this->assertEquals(
-            '  OK   Always Successful Test: foo'       . PHP_EOL .
+            '  OK   Always Successful Check: foo'       . PHP_EOL .
             '       ---------------------------------' . PHP_EOL .
             '       array ('                           . PHP_EOL .
             '         0 => \'1\','                     . PHP_EOL .
@@ -226,7 +226,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
         ob_clean();
 
         $this->reporter->onFinish($results);
-        $this->assertStringStartsWith('OK (20 diagnostic tests)', trim(ob_get_clean()));
+        $this->assertStringStartsWith('OK (20 diagnostic checks)', trim(ob_get_clean()));
     }
 
     public function testSummaryWithWarnings()
@@ -249,7 +249,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
         ob_clean();
 
         $this->reporter->onFinish($results);
-        $this->assertStringStartsWith('5 warnings, 15 successful tests', trim(ob_get_clean()));
+        $this->assertStringStartsWith('5 warnings, 15 successful checks', trim(ob_get_clean()));
     }
 
     public function testSummaryWithFailures()
@@ -277,7 +277,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
         ob_clean();
 
         $this->reporter->onFinish($results);
-        $this->assertStringStartsWith('5 failures, 5 warnings, 15 successful tests', trim(ob_get_clean()));
+        $this->assertStringStartsWith('5 failures, 5 warnings, 15 successful checks', trim(ob_get_clean()));
     }
 
     public function testSummaryWithUnknowns()
@@ -305,7 +305,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
         ob_clean();
 
         $this->reporter->onFinish($results);
-        $this->assertStringMatchesFormat('%A5 unknown test results%A', trim(ob_get_clean()));
+        $this->assertStringMatchesFormat('%A5 unknown check results%A', trim(ob_get_clean()));
     }
 
     public function testSummaryWithUnknownsAndFailures()
@@ -335,7 +335,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
         $this->reporter->onFinish($results);
         $result = trim(ob_get_clean());
         $this->assertStringMatchesFormat('%A5 failures%A', $result);
-        $this->assertStringMatchesFormat('%A5 unknown test results%A', $result);
+        $this->assertStringMatchesFormat('%A5 unknown check results%A', $result);
     }
 
     public function testStoppedNotice()

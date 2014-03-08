@@ -6,10 +6,11 @@ use Zend\Console\Adapter\AdapterInterface as Console;
 use Zend\Console\ColorInterface as Color;
 use ZendDiagnostics\Check\CheckInterface;
 use ZendDiagnostics\Result\Collection as ResultsCollection;
-use ZendDiagnostics\Result\Failure;
+use ZendDiagnostics\Result\FailureInterface as Failure;
 use ZendDiagnostics\Result\ResultInterface;
-use ZendDiagnostics\Result\Success;
-use ZendDiagnostics\Result\Warning;
+use ZendDiagnostics\Result\SkipInterface as Skip;
+use ZendDiagnostics\Result\SuccessInterface as Success;
+use ZendDiagnostics\Result\WarningInterface as Warning;
 use ZendDiagnostics\Runner\Reporter\ReporterInterface;
 
 class BasicConsole implements ReporterInterface
@@ -50,7 +51,7 @@ class BasicConsole implements ReporterInterface
         $this->width = $this->console->getWidth();
         $this->total = $checks->count();
 
-        // Calculate gutter width to accommodate number of tests passed
+        // Calculate gutter width to accommodate number of checks passed
         if ($this->total <= $this->width) {
             $this->gutter = 0; // everything fits well
         } else {
@@ -67,18 +68,20 @@ class BasicConsole implements ReporterInterface
      * method returns false, the Check will not be performed (will be skipped).
      *
      * @param  CheckInterface $check Check instance that is about to be performed.
+     * @param  bool           $alias The alias being targeted by the check
      * @return bool|void      Return false to prevent check from happening
      */
-    public function onBeforeRun(CheckInterface $check) {}
+    public function onBeforeRun(CheckInterface $check, $alias = null) {}
 
     /**
      * This method is called every time a Check has been performed.
      *
      * @param  CheckInterface  $check  A Check instance that has just finished running
      * @param  ResultInterface $result Result for that particular check instance
+     * @param  bool            $alias  The alias being targeted by the check
      * @return bool|void       Return false to prevent from running additional Checks
      */
-    public function onAfterRun(CheckInterface $check, ResultInterface $result)
+    public function onAfterRun(CheckInterface $check, ResultInterface $result, $alias = null)
     {
         // Draw a symbol
         if ($result instanceof Success) {
@@ -87,6 +90,8 @@ class BasicConsole implements ReporterInterface
             $this->console->write('F', Color::WHITE, Color::RED);
         } elseif ($result instanceof Warning) {
             $this->console->write('!', Color::YELLOW);
+        } elseif ($result instanceof Skip) {
+            $this->console->write('S', Color::YELLOW);
         } else {
             $this->console->write('?', Color::YELLOW);
         }
@@ -133,19 +138,29 @@ class BasicConsole implements ReporterInterface
         $this->console->writeLine();
 
         // Display a summary line
-        if ($results->getFailureCount() == 0 && $results->getWarningCount() == 0 && $results->getUnknownCount() == 0) {
-            $line = 'OK (' . $this->total . ' diagnostic tests)';
+        if (
+            $results->getFailureCount() == 0 &&
+            $results->getWarningCount() == 0 &&
+            $results->getUnknownCount() == 0 &&
+            $results->getSkipCount() == 0
+        ) {
+            $line = 'OK (' . $this->total . ' diagnostic checks)';
             $this->console->writeLine(
                 str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::GREEN
             );
         } elseif ($results->getFailureCount() == 0) {
-            $line = $results->getWarningCount() . ' warnings, ';
-            $line .= $results->getSuccessCount() . ' successful tests';
+            $line = $results->getWarningCount() . ' warnings';
+
+            if ($results->getSkipCount() > 0) {
+                $line .= ', ' . $results->getSkipCount() . ' skipped checks';
+            }
 
             if ($results->getUnknownCount() > 0) {
-                $line .= ', ' . $results->getUnknownCount() . ' unknown test results';
+                $line .= ', ' . $results->getUnknownCount() . ' unknown check results';
             }
+
+            $line .= ', ' . $results->getSuccessCount() . ' successful checks';
 
             $line .= '.';
 
@@ -155,12 +170,17 @@ class BasicConsole implements ReporterInterface
             );
         } else {
             $line = $results->getFailureCount() . ' failures, ';
-            $line .= $results->getWarningCount() . ' warnings, ';
-            $line .= $results->getSuccessCount() . ' successful tests';
+            $line .= $results->getWarningCount() . ' warnings';
+
+            if ($results->getSkipCount() > 0) {
+                $line .= ', ' . $results->getSkipCount() . ' skipped checks';
+            }
 
             if ($results->getUnknownCount() > 0) {
-                $line .= ', ' . $results->getUnknownCount() . ' unknown test results';
+                $line .= ', ' . $results->getUnknownCount() . ' unknown check results';
             }
+
+            $line .= ', ' . $results->getSuccessCount() . ' successful checks';
 
             $line .= '.';
 
@@ -192,6 +212,13 @@ class BasicConsole implements ReporterInterface
                     $this->console->writeLine($message, Color::YELLOW);
                 }
                 $this->console->writeLine();
+            } elseif ($result instanceof Skip) {
+                $this->console->writeLine('Skipped: ' . $check->getLabel(), Color::YELLOW);
+                $message = $result->getMessage();
+                if ($message) {
+                    $this->console->writeLine($message, Color::YELLOW);
+                }
+                $this->console->writeLine();
             } elseif (!$result instanceof Success) {
                 $this->console->writeLine('Unknown result ' . get_class($result) . ': ' . $check->getLabel(), Color::YELLOW);
                 $message = $result->getMessage();
@@ -202,7 +229,7 @@ class BasicConsole implements ReporterInterface
             }
         }
 
-        // Display information that the test has been aborted.
+        // Display information that the check has been aborted.
         if ($this->stopped) {
             $this->console->writeLine('Diagnostics aborted because of a failure.', Color::RED);
         }

@@ -35,9 +35,10 @@ class DummyReporter implements ReporterInterface
      * method returns false, the Check will not be performed (will be skipped).
      *
      * @param  CheckInterface $check Check instance that is about to be performed.
+     * @param  bool           $alias Test alias.
      * @return bool|void      Return false to prevent check from happening
      */
-    public function onBeforeRun(CheckInterface $check) {}
+    public function onBeforeRun(CheckInterface $check, $alias = null) {}
 
     /**
      * This method is called every time a Check has been performed. If this method
@@ -46,9 +47,10 @@ class DummyReporter implements ReporterInterface
      *
      * @param  CheckInterface  $check  A Check instance that has just finished running
      * @param  ResultInterface $result Result for that particular check instance
+     * @param  bool            $alias  Test alias.
      * @return bool|void       Return false to prevent from running additional Checks
      */
-    public function onAfterRun(CheckInterface $check, ResultInterface $result)
+    public function onAfterRun(CheckInterface $check, ResultInterface $result, $alias = null)
     {
         if (!$this->stopAfterRun) {
             return false;

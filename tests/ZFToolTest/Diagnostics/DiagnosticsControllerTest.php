@@ -7,6 +7,7 @@ use Zend\Mvc\Router\RouteMatch;
 use Zend\ServiceManager\ServiceManager;
 use Zend\Stdlib\ArrayObject;
 use Zend\Stdlib\ArrayUtils;
+use ZendDiagnostics\Result\Collection;
 use ZendDiagnostics\Result\Failure;
 use ZendDiagnostics\Result\Success;
 use ZendDiagnostics\Result\Warning;
@@ -77,6 +78,15 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         $this->controller = new DiagnosticsController();
         $this->controller->setServiceLocator($this->sm);
         $this->controller->setEvent($event);
+
+        // Top-level output buffering to prevent leaking info to the console
+        ob_start();
+    }
+
+    public function teardown()
+    {
+        // Discard any output from the diag controller
+        ob_end_clean();
     }
 
     public function invalidDefinitionsProvider()
@@ -89,37 +99,36 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
                  array(),
                 'Cannot use an empty array%a'
             ),
-            'an invalid test instance' => array(
+            'an invalid check instance' => array(
                 new \stdClass(),
                 'Cannot use object of class "stdClass"%a'
             ),
             'an unknown definition type' => array(
                 $res,
-                'Cannot understand diagnostic test definition %a'
+                'Cannot understand diagnostic check definition %a'
             ),
             'an invalid class name' => array(
                 'stdClass',
-                'The test object of class stdClass does not implement ZendDiagnostics\Check\CheckInterface'
+                'The check object of class stdClass does not implement ZendDiagnostics\Check\CheckInterface'
             ),
-            'an unknown test identifier' => array(
+            'an unknown check identifier' => array(
                 'some\unknown\class\or\service\identifier',
-                'Cannot find test class or service with the name of "some\unknown\class\or\service\identifier"%a'
+                'Cannot find check class or service with the name of "some\unknown\class\or\service\identifier"%a'
             )
         );
     }
 
-    public function testEmptyResult()
+    public function testNoChecks()
     {
         $result = $this->controller->dispatch(new ConsoleRequest());
         $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
-        $this->assertInstanceOf('ZendDiagnostics\Result\Collection', $result->getVariable('results'));
-        $this->assertEquals(0, $result->getVariable('results')->count());
+        $this->assertEquals(1, $result->getErrorLevel());
     }
 
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *          'test label' => new Test()
+     *          'check label' => new Check()
      *      )
      *  )
      */
@@ -133,6 +142,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
         $this->assertInstanceOf('ZendDiagnostics\Result\Collection', $result->getVariable('results'));
 
+        /** @var Collection $results */
         $results = $result->getVariable('results');
         $this->assertEquals(1, $results->count());
         $this->assertTrue($results->offsetExists($check));
@@ -143,7 +153,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *          'test label' => 'My\Namespace\ClassName'
+     *          'check label' => 'My\Namespace\ClassName'
      *      )
      *  )
      */
@@ -168,7 +178,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *          'test label' => array('My\Namespace\ClassName', 'methodName')
+     *          'check label' => array('My\Namespace\ClassName', 'methodName')
      *      )
      *  )
      */
@@ -196,7 +206,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *          'test label' => array(
+     *          'check label' => array(
      *              array('My\Namespace\ClassName', 'methodName'),
      *              'param1',
      *              'param2',
@@ -235,7 +245,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *          'test label' => 'someFunctionName'
+     *          'check label' => 'someFunctionName'
      *      )
      *  )
      */
@@ -261,7 +271,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *          'test label' => array('someFunctionName', 'param1', 'param2')
+     *          'check label' => array('someFunctionName', 'param1', 'param2')
      *      )
      *  )
      */
@@ -294,7 +304,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *          'test label' => array('ClassExists', 'params')
+     *          'check label' => array('ClassExists', 'params')
      *      )
      *  )
      */
@@ -319,12 +329,12 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *          'test label' => 'Some\ServiceManager\Identifier'
+     *          'check label' => 'Some\ServiceManager\Identifier'
      *      )
      *  ),
      *  'service_manager' => array(
      *      'invokables' => array(
-     *          'Some\ServiceManager\Identifier' => 'Some\Test\Class'
+     *          'Some\ServiceManager\Identifier' => 'Some\Check\Class'
      *      )
      *  )
      */
@@ -358,7 +368,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *          'test label' => 'PhpVersion'
+     *          'check label' => 'PhpVersion'
      *      )
      *  )
      */
@@ -394,7 +404,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
             array('dummymodule: test1', 'ZendDiagnostics\Result\Success', 'test1 success'),
             array('dummymodule: test2', 'ZendDiagnostics\Result\Success', ''),
             array('dummymodule: test3', 'ZendDiagnostics\Result\Failure', ''),
-            array('dummymodule: test4', 'ZendDiagnostics\Result\Failure', 'static test message'),
+            array('dummymodule: test4', 'ZendDiagnostics\Result\Failure', 'static check message'),
             array('dummymodule: test5', 'ZendDiagnostics\Result\Failure', 'someOtherMessage'),
         );
 
@@ -498,8 +508,8 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     /**
      *  'diagnostics' => array(
      *      'group' => array(
-     *           'Some\Test',
-     *           'Some\Other\Test',
+     *           'Some\Check',
+     *           'Some\Other\Check',
      *           'test3' => 'Another\One'
      *      )
      *  ),
@@ -552,7 +562,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         $this->config['diagnostics']['group1']['test11'] = $check11 = new AlwaysSuccessCheck();
         $this->config['diagnostics']['group2']['test21'] = $check21 = new AlwaysSuccessCheck();
         $this->config['diagnostics']['group2']['test22'] = $check22 = new AlwaysSuccessCheck();
-        $this->routeMatch->setParam('testGroupName', 'group2');
+        $this->routeMatch->setParam('filter', 'group2');
         $result = $this->controller->dispatch(new ConsoleRequest());
 
         $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
@@ -577,7 +587,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         $this->mm->injectModule('foomodule1', new DummyModule($this->sm));
         $this->mm->injectModule('foomodule2', new DummyModule($this->sm));
         $this->mm->injectModule('foomodule3', new DummyModule($this->sm));
-        $this->routeMatch->setParam('testGroupName', 'foomodule2');
+        $this->routeMatch->setParam('filter', 'foomodule2');
         $result = $this->controller->dispatch(new ConsoleRequest());
 
         $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
@@ -589,6 +599,17 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('ZendDiagnostics\Check\CheckInterface', $check = array_shift($checks));
         $this->assertEquals('foomodule2: test1', $check->getLabel());
         $this->assertInstanceOf('ZendDiagnostics\Result\Success', $results[$check]);
+    }
+
+    public function testFilteringFailure()
+    {
+        $this->config['diagnostics']['group1']['test11'] = $check11 = new AlwaysSuccessCheck();
+        $this->config['diagnostics']['group2']['test21'] = $check21 = new AlwaysSuccessCheck();
+        $this->config['diagnostics']['group2']['test22'] = $check22 = new AlwaysSuccessCheck();
+        $this->routeMatch->setParam('filter', 'non-existent-group');
+        $result = $this->controller->dispatch(new ConsoleRequest());
+        $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
+        $this->assertEquals(1, $result->getErrorLevel());
     }
 
     public function testBreakOnFailure()
@@ -633,7 +654,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
 
         ob_start();
         $result = $this->controller->dispatch(new ConsoleRequest());
-        $this->assertStringMatchesFormat('Starting%aOK%agroup: test1%aOK (1 diagnostic test%a', ob_get_clean());
+        $this->assertStringMatchesFormat('Starting%aOK%agroup: test1%aOK (1 diagnostic check%a', ob_get_clean());
 
         $this->assertInstanceOf('Zend\View\Model\ConsoleModel', $result);
         $this->assertInstanceOf('ZendDiagnostics\Result\Collection', $result->getVariable('results'));
@@ -648,7 +669,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
 
         ob_start();
         $result = $this->controller->dispatch(new ConsoleRequest());
-        $this->assertStringMatchesFormat('Starting%aOK%agroup: test1%afoo%abar%aOK (1 diagnostic test%a', ob_get_clean());
+        $this->assertStringMatchesFormat('Starting%aOK%agroup: test1%afoo%abar%aOK (1 diagnostic check%a', ob_get_clean());
 
         $this->assertInstanceOf('Zend\View\Model\ConsoleModel', $result);
         $this->assertInstanceOf('ZendDiagnostics\Result\Collection', $result->getVariable('results'));

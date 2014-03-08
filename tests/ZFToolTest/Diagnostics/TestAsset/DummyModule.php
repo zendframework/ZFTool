@@ -22,8 +22,6 @@ class DummyModule
 
     public function getDiagnostics()
     {
-        $moduleManager = $this->sm->get('modulemanager');
-
         return array(
             'test1' => function() {return new Success('test1 success');},
             'test2' => array('is_string', 'a'),
@@ -33,7 +31,7 @@ class DummyModule
         );
     }
 
-    public static function staticTestMethod($message = 'static test message')
+    public static function staticTestMethod($message = 'static check message')
     {
         return new Failure($message);
     }

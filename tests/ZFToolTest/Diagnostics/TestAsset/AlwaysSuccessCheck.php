@@ -7,7 +7,7 @@ use ZendDiagnostics\Check\CheckInterface;
 
 class AlwaysSuccessCheck extends AbstractCheck implements CheckInterface
 {
-    protected $label = 'Always Successful Test';
+    protected $label = 'Always Successful Check';
 
     public function check()
     {
