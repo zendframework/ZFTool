@@ -82,14 +82,22 @@ class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterfa
             array('<path>', 'The root path of a ZF2 application where to create the module'),
 
             'Controller creation:',
-            'create controller <name> <module>' => 'create a controller in module',
-            array('<name>', 'The name of the controller to be created.'),
-            array('<module>', 'The module in which the controller should be created.'),
+            'create controller <name> <module> [<path>]' => 'create a controller in module',
+            array('<name>', 'The name of the controller to be created'),
+            array('<module>', 'The module in which the controller should be created'),
+            array('<path>', 'The root path of a ZF2 application where to create the controller'),
+
+            'Action creation:',
+            'create action <name> <controllerName> <module> [<path>]' => 'create an action in a controller',
+            array('<name>', 'The name of the action to be created'),
+            array('<controllerName>', 'The name of the controller in which the action should be created'),
+            array('<module>', 'The module containing the controller'),
+            array('<path>', 'The root path of a ZF2 application where to create the action'),
 
             'Classmap generator:',
             'classmap generate <directory> <classmap file> [--append|-a] [--overwrite|-w]' => '',
             array('<directory>',        'The directory to scan for PHP classes (use "." to use current directory)'),
-            array('<classmap file>',    'File name for generated class map file  or - for standard output.'.
+            array('<classmap file>',    'File name for generated class map file  or - for standard output. '.
                                         'If not supplied, defaults to autoload_classmap.php inside <directory>.'),
             array('--append | -a',      'Append to classmap file if it exists'),
             array('--overwrite | -w',   'Whether or not to overwrite existing classmap file'),
