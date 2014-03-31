@@ -32,18 +32,19 @@ class Runner extends ZendDiagnosticsRunner
     /**
      * Run all Checks and return a Result\Collection for every check.
      *
-     * @param  string|null $checkAlias An alias of Check instance to run, or null to run all checks.
+     * @param  string|null       $checkAlias An alias of Check instance to run, or null to run all checks.
      * @return ResultsCollection The result of running Checks
      */
     public function run($checkAlias = null)
     {
         $this->breakOnFailure = $this->config->getBreakOnFailure();
         $this->catchErrorSeverity = $this->config->getBreakOnFailure();
+
         return parent::run($checkAlias);
     }
 
     /**
-     * @param ConfigInterface|array $config
+     * @param  ConfigInterface|array              $config
      * @throws Exception\InvalidArgumentException
      * @return void
      */
@@ -75,7 +76,7 @@ class Runner extends ZendDiagnosticsRunner
      */
     public function setBreakOnFailure($breakOnFailure)
     {
-        $this->config->setBreakOnFailure((bool)$breakOnFailure);
+        $this->config->setBreakOnFailure((bool) $breakOnFailure);
     }
 
     /**
@@ -94,7 +95,7 @@ class Runner extends ZendDiagnosticsRunner
      */
     public function setCatchErrorSeverity($catchErrorSeverity)
     {
-        $this->config->setCatchErrorSeverity((int)$catchErrorSeverity);
+        $this->config->setCatchErrorSeverity((int) $catchErrorSeverity);
     }
 
     /**

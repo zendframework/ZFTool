@@ -2,7 +2,6 @@
 namespace ZFTool\Diagnostics;
 
 use Zend\Stdlib\AbstractOptions;
-use \Traversable;
 
 class Config extends AbstractOptions implements ConfigInterface
 {
@@ -45,7 +44,7 @@ class Config extends AbstractOptions implements ConfigInterface
      */
     public function setCatchErrorSeverity($catchErrorSeverity)
     {
-        $this->catchErrorSeverity = (int)$catchErrorSeverity;
+        $this->catchErrorSeverity = (int) $catchErrorSeverity;
     }
 
     /**
@@ -57,6 +56,5 @@ class Config extends AbstractOptions implements ConfigInterface
     {
         return $this->catchErrorSeverity;
     }
-
 
 }

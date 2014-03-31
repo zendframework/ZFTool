@@ -202,7 +202,6 @@ class VerboseConsole implements ReporterInterface
             $this->console->writeLine('Diagnostics aborted because of a failure.', Color::RED);
         }
 
-
         // Display a summary line
         if ($results->getFailureCount() == 0 && $results->getWarningCount() == 0 && $results->getUnknownCount() == 0) {
             $line = 'OK (' . $this->total . ' diagnostic checks)';
@@ -283,7 +282,7 @@ class VerboseConsole implements ReporterInterface
      */
     public function setDisplayData($displayData)
     {
-        $this->displayData = (bool)$displayData;
+        $this->displayData = (bool) $displayData;
     }
 
     /**
@@ -298,9 +297,9 @@ class VerboseConsole implements ReporterInterface
     /**
      * Apply padding and word-wrapping for a string.
      *
-     * @param string $string  The string to transform
-     * @param int    $width   Maximum width at which the string should be wrapped to the next line
-     * @param int    $padding The left-side padding to apply
+     * @param  string $string  The string to transform
+     * @param  int    $width   Maximum width at which the string should be wrapped to the next line
+     * @param  int    $padding The left-side padding to apply
      * @return string The padded and wrapped string
      */
     protected function strColPad($string, $width, $padding)

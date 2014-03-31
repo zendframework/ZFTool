@@ -2,11 +2,7 @@
 namespace ZFToolTest\Diagnostics;
 
 use ZFTool\Diagnostics\Config;
-use ZFToolTest\Diagnostics\TestAsset\UnknownResult as Unknown;
 use ZFTool\Diagnostics\Runner;
-use ZendDiagnostics\Result\Success;
-use ZendDiagnostics\Result\Failure;
-use ZendDiagnostics\Result\Warning;
 
 require_once __DIR__.'/TestAsset/UnknownResult.php';
 

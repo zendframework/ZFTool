@@ -409,7 +409,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         );
 
         $x = 0;
-        foreach($results as $check){
+        foreach ($results as $check) {
             $result = $results[$check];
             list($label, $class, $message) = $expected[$x++];
             error_reporting(E_ERROR);
@@ -548,10 +548,11 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     public function testInvalidDefinitions($definition, $exceptionMessage)
     {
         $this->config['diagnostics']['group']['foo'] = $definition;
-        try{
+        try {
             $res = $this->controller->dispatch(new ConsoleRequest());
-        }catch(RuntimeException $e){
+        } catch (RuntimeException $e) {
             $this->assertStringMatchesFormat($exceptionMessage, $e->getMessage());
+
             return;
         }
         $this->fail('Definition is invalid!');
@@ -723,6 +724,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     public static function staticTestMethod($message = 'bar', $data = null)
     {
         static::$staticTestMethodCalled = true;
+
         return new Success($message, $data);
     }
 

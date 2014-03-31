@@ -12,23 +12,7 @@
 
 ## Available checks
 
- * All checks from [ZendDiagnostics](https://github.com/zendframework/ZendDiagnostics#zenddiagnostics):
-    * [ApcFragmentation](https://github.com/zendframework/ZendDiagnostics#apcfragmentation) - check if APC memory fragmentation is below given threshold,
-    * [ApcMemory](https://github.com/zendframework/ZendDiagnostics#apcmemory) - check available APC memory,
-    * [Callback](https://github.com/zendframework/ZendDiagnostics#callback) - call a user-defined diagnostic function,
-    * [ClassExists](https://github.com/zendframework/ZendDiagnostics#classexists) - make sure class exists in current environment,
-    * [CpuPerformance](https://github.com/zendframework/ZendDiagnostics#cpuperformance) - check server CPU performance is above baseline,
-    * [DirReadable](https://github.com/zendframework/ZendDiagnostics#dirreadable) - make sure given path is readable,
-    * [DirWritable](https://github.com/zendframework/ZendDiagnostics#dirwritable) - make sure given path is writable,
-    * [DiskFree](https://github.com/zendframework/ZendDiagnostics#diskfree) - check there's enough free space on given path,
-    * [ExtensionLoaded](https://github.com/zendframework/ZendDiagnostics#extensionloaded) - make sure extension is loaded,
-    * [HttpService](https://github.com/zendframework/ZendDiagnostics#httpservice) - check if given http host is responding,
-    * [Memcache](https://github.com/zendframework/ZendDiagnostics#memcache) - check if memcache extension is loaded and given server is reachable,
-    * [PhpVersion](https://github.com/zendframework/ZendDiagnostics#phpversion) - make sure that PHP version matches constraint,
-    * [PhpFlag](https://github.com/zendframework/ZendDiagnostics#phpflag) - make sure that given PHP flag (feature) is turned on or off.
-    * [ProcessRunning](https://github.com/zendframework/ZendDiagnostics#processrunning) - check if a process with given name or ID is currently running,
-    * [SecurityAdvisory](https://github.com/zendframework/ZendDiagnostics#securityadvisory) - check installed composer dependencies against SensioLabs SA database,
-    * [SteamWrapperExists](https://github.com/zendframework/ZendDiagnostics#streamwrapperexists) - make sure given stream wrapper is available.
+ * All checks from [ZendDiagnostics](https://github.com/zendframework/ZendDiagnostics#zenddiagnostics)
 
 ## Running diagnostics in console
 

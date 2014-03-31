@@ -56,7 +56,7 @@ class DiagnosticsController extends AbstractActionController
         if ($checkGroupName) {
             $config = array_intersect_ukey($config, array($checkGroupName => 1), 'strcasecmp');
 
-            if(empty($config)) {
+            if (empty($config)) {
                 $m = new ConsoleModel();
                 $m->setResult($console->colorize(sprintf(
                     "Unable to find a group of diagnostic checks called \"%s\". Try to use module name (i.e. \"%s\").\n",
@@ -64,12 +64,13 @@ class DiagnosticsController extends AbstractActionController
                     'Application'
                 ), ColorInterface::YELLOW));
                 $m->setErrorLevel(1);
+
                 return $m;
             }
         }
 
         // Check if there are any diagnostic checks defined
-        if(empty($config)) {
+        if (empty($config)) {
             $m = new ConsoleModel();
             $m->setResult(
                 $console->colorize(
@@ -80,6 +81,7 @@ class DiagnosticsController extends AbstractActionController
                 , ColorInterface::YELLOW)
             );
             $m->setErrorLevel(1);
+
             return $m;
         }
 

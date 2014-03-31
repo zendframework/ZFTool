@@ -41,8 +41,8 @@ class BasicConsole implements ReporterInterface
     /**
      * This method is called right after Reporter starts running, via Runner::run()
      *
-     * @param ArrayObject $checks
-     * @param array        $runnerConfig
+     * @param  ArrayObject $checks
+     * @param  array       $runnerConfig
      * @return void
      */
     public function onStart(ArrayObject $checks, $runnerConfig)

@@ -23,7 +23,7 @@ class DummyModule
     public function getDiagnostics()
     {
         return array(
-            'test1' => function() {return new Success('test1 success');},
+            'test1' => function () {return new Success('test1 success');},
             'test2' => array('is_string', 'a'),
             'test3' => array('stristr', 'abc','d'),
             'test4' => array(__CLASS__,'staticTestMethod'),
