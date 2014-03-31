@@ -1,19 +1,12 @@
 <?php
 namespace ZFTool\Diagnostics;
 
-use ZFTool\Diagnostics\Exception\InvalidArgumentException;
-use ZFTool\Diagnostics\Exception\RuntimeException;
-use ZFTool\Diagnostics\Result\Collection;
-use ZFTool\Diagnostics\Result\Failure;
-use ZFTool\Diagnostics\Result\ResultInterface;
-use ZFTool\Diagnostics\Test\TestInterface as Test;
-use Zend\EventManager\Event;
-use Zend\EventManager\EventManager;
-use Zend\EventManager\EventManagerInterface;
-use Zend\EventManager\ListenerAggregateInterface;
-use ArrayObject;
+use Traversable;
+use ZendDiagnostics\Runner\Reporter\ReporterInterface;
+use ZendDiagnostics\Runner\Runner as ZendDiagnosticsRunner;
+use ZendDiagnostics\Result\Collection as ResultsCollection;
 
-class Runner
+class Runner extends ZendDiagnosticsRunner
 {
     /**
      * @var ConfigInterface
@@ -21,108 +14,51 @@ class Runner
     protected $config;
 
     /**
-     * @var EventManagerInterface
-     */
-    protected $eventManager;
-
-    /**
-     * An array of tests to run
+     * Create new instance of Runner, optionally providing configuration and initial collection of Checks.
      *
-     * @var ArrayObject
+     * @param ConfigInterface|array|traversable $config   Config settings.
+     * @param null|array|Traversable            $checks   A collection of Checks to run.
+     * @param null|ReporterInterface            $reporter Reporter instance to use
      */
-    protected $tests;
-
-    public function __construct(ConfigInterface $config = null)
+    public function __construct($config = null, $checks = null, ReporterInterface $reporter = null)
     {
-        // init config
-        if ($config === null) {
-            $config = new Config();
+        if ($config !== null) {
+            $this->setConfig($config);
         }
 
-        $this->config = $config;
-        $this->tests = new ArrayObject();
-
-        // Add default run listener
-        $listenerClass = $this->getConfig()->getDefaultRunListenerClass();
-        if ($listenerClass) {
-            $this->getEventManager()->attachAggregate(new $listenerClass());
-        }
+        return parent::__construct(array(), $checks, $reporter);
     }
 
     /**
-     * @throws Exception\RuntimeException
-     * @return Collection The result of tests
+     * Run all Checks and return a Result\Collection for every check.
+     *
+     * @param  string|null       $checkAlias An alias of Check instance to run, or null to run all checks.
+     * @return ResultsCollection The result of running Checks
      */
-    public function run()
+    public function run($checkAlias = null)
     {
-        $breakOnFailure = $this->getConfig()->getBreakOnFailure();
-        $em = $this->getEventManager();
-        $testRun = new RunEvent();
-        $results = new Collection();
-        $testRun->setResults($results);
-        $testRun->setParam('tests', $this->tests);
+        $this->breakOnFailure = $this->config->getBreakOnFailure();
+        $this->catchErrorSeverity = $this->config->getBreakOnFailure();
 
-        // trigger START event
-        $em->trigger(RunEvent::EVENT_START, $testRun);
-
-        // Iterate over all tests
-        foreach ($this->tests as $test) {
-            $testRun->setTarget($test);
-            $testRun->clearLastResult();
-
-            // Skip testing if BEFORE_RUN returned false or has been stopped
-            $beforeRun = $em->trigger(RunEvent::EVENT_BEFORE_RUN, $testRun);
-            if ($beforeRun->stopped() || $beforeRun->contains(false)) {
-                continue;
-            }
-
-            // Run the test!
-            $result = $em->trigger(RunEvent::EVENT_RUN, $testRun, function($r){
-                if($r instanceof ResultInterface) {
-                    return true;
-                } else {
-                    return false;
-                }
-            })->last();
-
-            // Interpret result
-            if (!is_object($result) || !$result instanceof ResultInterface) {
-                $what = is_object($result) ? 'object of class ' . get_class($result) : gettype($result);
-                throw new RuntimeException(
-                    'Test run resulted in ' . $what . ' Expected instance of ' . __NAMESPACE__ . '\Result\ResultInterface'
-                );
-            }
-
-            // Save test result
-            $results[$test] = $result;
-            $testRun->setLastResult($result);
-
-            // Stop testing if AFTER_RUN returned false or has been stopped
-            $afterRun = $em->trigger(RunEvent::EVENT_AFTER_RUN, $testRun);
-            if ($afterRun->stopped() || $afterRun->contains(false)) {
-                $em->trigger(RunEvent::EVENT_STOP, $testRun);
-                break;
-            }
-
-            // Stop testing on first failure
-            if ($breakOnFailure && $result instanceof Failure) {
-                $em->trigger(RunEvent::EVENT_STOP, $testRun);
-                break;
-            }
-        }
-
-        // trigger FINISH event
-        $em->trigger(RunEvent::EVENT_FINISH, $testRun);
-
-        return $results;
+        return parent::run($checkAlias);
     }
 
     /**
-     * @param ConfigInterface $config
+     * @param  ConfigInterface|array              $config
+     * @throws Exception\InvalidArgumentException
+     * @return void
      */
-    public function setConfig(ConfigInterface $config)
+    public function setConfig($config)
     {
-        $this->config = $config;
+        if ($config instanceof ConfigInterface) {
+            $this->config = $config;
+        } elseif (is_array($config) || $config instanceof Traversable) {
+            $this->config = new Config($config);
+        } else {
+            throw new Exception\InvalidArgumentException(
+                'Diagnostics Runner setConfig() expects an array, traversable or instance of ConfigInterface'
+            );
+        }
     }
 
     /**
@@ -134,81 +70,41 @@ class Runner
     }
 
     /**
-     * Add diagnostic test to run.
+     * Set if checking should abort on first failure.
      *
-     * @param Test        $test
+     * @param boolean $breakOnFailure
      */
-    public function addTest(Test $test)
+    public function setBreakOnFailure($breakOnFailure)
     {
-        $this->tests[] = $test;
+        $this->config->setBreakOnFailure((bool) $breakOnFailure);
     }
 
     /**
-     * @param array|\Traversable $tests
-     * @throws Exception\InvalidArgumentException
+     * @return boolean
      */
-    public function addTests($tests)
+    public function getBreakOnFailure()
     {
-        if (!is_array($tests) && !$tests instanceof \Traversable) {
-            $what = is_object($tests) ? 'object of class '.get_class($tests) : gettype($tests);
-            throw new InvalidArgumentException('Cannot add tests from '.$what.' - expected array or Traversable');
-        }
-
-        foreach($tests as $test) {
-            if (!$test instanceof Test ){
-                $what = is_object($test) ? 'object of class '.get_class($test) : gettype($test);
-                throw new InvalidArgumentException('Cannot use '.$what.' as test - expected '.__NAMESPACE__. '\Test\TestInterface');
-            }
-            $this->tests[] = $test;
-        }
+        return $this->config->getBreakOnFailure();
     }
 
     /**
-     * Add new reporter.
+     * Set severity of error that will result in a check failing. Defaults to:
+     *  E_WARNING|E_PARSE|E_USER_ERROR|E_USER_WARNING|E_RECOVERABLE_ERROR
      *
-     * @param ListenerAggregateInterface $reporter
+     * @param int $catchErrorSeverity
      */
-    public function addReporter(ListenerAggregateInterface $reporter)
+    public function setCatchErrorSeverity($catchErrorSeverity)
     {
-        $this->getEventManager()->attachAggregate($reporter);
+        $this->config->setCatchErrorSeverity((int) $catchErrorSeverity);
     }
 
     /**
-     * Remove previously attached reporter.
+     * Get current severity of error that will result in a check failing.
      *
-     * @param ListenerAggregateInterface $reporter
+     * @return int
      */
-    public function removeReporter(ListenerAggregateInterface $reporter)
+    public function getCatchErrorSeverity()
     {
-        $this->getEventManager()->detachAggregate($reporter);
+        return $this->config->getCatchErrorSeverity();
     }
-
-    /**
-     * @param \Zend\EventManager\EventManagerInterface $em
-     */
-    public function setEventManager(EventManagerInterface $em)
-    {
-        $this->eventManager = $em;
-    }
-
-    /**
-     * @return \Zend\EventManager\EventManagerInterface
-     */
-    public function getEventManager()
-    {
-        if (!$this->eventManager) {
-            $this->eventManager = new EventManager();
-        }
-
-        return $this->eventManager;
-    }
-
-    /**
-     * @return ArrayObject
-     */
-    public function getTests()
-    {
-        return $this->tests;
-    }
-
 }

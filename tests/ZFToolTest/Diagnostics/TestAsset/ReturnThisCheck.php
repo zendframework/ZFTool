@@ -1,11 +1,9 @@
 <?php
 namespace ZFToolTest\Diagnostics\TestAsset;
 
+use ZendDiagnostics\Check\CheckInterface;
 
-use ZFTool\Diagnostics\Result\Success;
-use ZFTool\Diagnostics\Test\TestInterface;
-
-class ReturnThisTest implements TestInterface
+class ReturnThisCheck implements CheckInterface
 {
     protected $label = '';
 
@@ -17,7 +15,7 @@ class ReturnThisTest implements TestInterface
         $this->label = gettype($valueToReturn);
     }
 
-    public function run()
+    public function check()
     {
         return $this->value;
     }

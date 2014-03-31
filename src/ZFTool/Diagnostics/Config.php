@@ -2,7 +2,6 @@
 namespace ZFTool\Diagnostics;
 
 use Zend\Stdlib\AbstractOptions;
-use \Traversable;
 
 class Config extends AbstractOptions implements ConfigInterface
 {
@@ -12,9 +11,12 @@ class Config extends AbstractOptions implements ConfigInterface
     protected $breakOnFailure = false;
 
     /**
-     * @var string
+     * Severity of error that will result in a test failing. Defaults to:
+     *  E_WARNING|E_PARSE|E_USER_ERROR|E_USER_WARNING|E_RECOVERABLE_ERROR
+     *
+     * @var int
      */
-    protected $defaultRunListenerClass = '\ZFTool\Diagnostics\RunListener';
+    protected $catchErrorSeverity = 4870;
 
     /**
      * Should diagnostics stop on first failure.
@@ -35,22 +37,24 @@ class Config extends AbstractOptions implements ConfigInterface
     }
 
     /**
-     * Set the default class to create run listener.
+     * Set severity of error that will result in a check failing. Defaults to:
+     *  E_WARNING|E_PARSE|E_USER_ERROR|E_USER_WARNING|E_RECOVERABLE_ERROR
      *
-     * @param string $defaultRunListenerClass
+     * @param int $catchErrorSeverity
      */
-    public function setDefaultRunListenerClass($defaultRunListenerClass)
+    public function setCatchErrorSeverity($catchErrorSeverity)
     {
-        $this->defaultRunListenerClass = $defaultRunListenerClass;
+        $this->catchErrorSeverity = (int) $catchErrorSeverity;
     }
 
     /**
-     * @return string
+     * Get current severity of error that will result in a check failing.
+     *
+     * @return int
      */
-    public function getDefaultRunListenerClass()
+    public function getCatchErrorSeverity()
     {
-        return $this->defaultRunListenerClass;
+        return $this->catchErrorSeverity;
     }
-
 
 }
