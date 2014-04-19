@@ -190,7 +190,7 @@ class ClassmapController extends AbstractActionController
         }
 
         $content = preg_replace_callback('(\n\s+([^=]+)=>)', function ($match) use ($maxWidth) {
-            return PHP_EOL . '    ' . $match[1] . str_repeat(' ', $maxWidth - strlen($match[1])) . '=>';
+            return "\n    " . $match[1] . str_repeat(' ', $maxWidth - strlen($match[1])) . '=>';
         }, $content);
 
         if (!$usingStdout) {
