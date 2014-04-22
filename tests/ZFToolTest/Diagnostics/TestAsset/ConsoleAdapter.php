@@ -2,7 +2,6 @@
 namespace ZFToolTest\Diagnostics\TestAssets;
 
 use Zend\Console\Adapter\AbstractAdapter;
-use Zend\Console\Charset\Ascii;
 
 class ConsoleAdapter extends AbstractAdapter
 {
@@ -17,39 +16,14 @@ class ConsoleAdapter extends AbstractAdapter
     /**
      * Read a single line from the console input
      *
-     * @param int $maxLength        Maximum response length
+     * @param  int    $maxLength Maximum response length
      * @return string
      */
-    public function readLine($maxLength = 2048)
-    {
-        if($this->autoRewind) {
-            rewind($this->stream);
-        }
-        $line = stream_get_line($this->stream, $maxLength, PHP_EOL);
-        return rtrim($line,"\n\r");
-    }
-
-    /**
-     * Read a single character from the console input
-     *
-     * @param string|null   $mask   A list of allowed chars
-     * @return string
-     */
-    public function readChar($mask = null)
-    {
-        if($this->autoRewind) {
-            rewind($this->stream);
-        }
-        do {
-            $char = fread($this->stream, 1);
-        } while ("" === $char || ($mask !== null && false === strstr($mask, $char)));
-        return $char;
-    }
 
     /**
      * Force reported width for testing purposes.
      *
-     * @param int $width
+     * @param  int $width
      * @return int
      */
     public function setTestWidth($width)

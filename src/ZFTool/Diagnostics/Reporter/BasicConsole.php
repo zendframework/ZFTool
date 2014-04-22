@@ -1,15 +1,19 @@
 <?php
 namespace ZFTool\Diagnostics\Reporter;
 
-use ZFTool\Diagnostics\Result\Failure;
-use ZFTool\Diagnostics\Result\Success;
-use ZFTool\Diagnostics\Result\Warning;
-use ZFTool\Diagnostics\RunEvent;
+use ArrayObject;
 use Zend\Console\Adapter\AdapterInterface as Console;
 use Zend\Console\ColorInterface as Color;
-use Zend\Stdlib\StringUtils;
+use ZendDiagnostics\Check\CheckInterface;
+use ZendDiagnostics\Result\Collection as ResultsCollection;
+use ZendDiagnostics\Result\FailureInterface as Failure;
+use ZendDiagnostics\Result\ResultInterface;
+use ZendDiagnostics\Result\SkipInterface as Skip;
+use ZendDiagnostics\Result\SuccessInterface as Success;
+use ZendDiagnostics\Result\WarningInterface as Warning;
+use ZendDiagnostics\Runner\Reporter\ReporterInterface;
 
-class BasicConsole extends AbstractReporter
+class BasicConsole implements ReporterInterface
 {
     /**
      * @var \Zend\Console\Adapter\AdapterInterface
@@ -24,18 +28,30 @@ class BasicConsole extends AbstractReporter
     protected $gutter;
     protected $stopped = false;
 
+    /**
+     * Create instance of reporter.
+     *
+     * @param Console $console
+     */
     public function __construct(Console $console)
     {
         $this->console = $console;
     }
 
-    public function onStart(RunEvent $e)
+    /**
+     * This method is called right after Reporter starts running, via Runner::run()
+     *
+     * @param  ArrayObject $checks
+     * @param  array       $runnerConfig
+     * @return void
+     */
+    public function onStart(ArrayObject $checks, $runnerConfig)
     {
         $this->stopped = false;
         $this->width = $this->console->getWidth();
-        $this->total = count($e->getParam('tests'));
+        $this->total = $checks->count();
 
-        // Calculate gutter width to accommodate number of tests passed
+        // Calculate gutter width to accommodate number of checks passed
         if ($this->total <= $this->width) {
             $this->gutter = 0; // everything fits well
         } else {
@@ -47,10 +63,26 @@ class BasicConsole extends AbstractReporter
         $this->console->writeLine('');
     }
 
-    public function onAfterRun(RunEvent $e)
-    {
-        $result = $e->getLastResult();
+    /**
+     * This method is called before each individual Check is performed. If this
+     * method returns false, the Check will not be performed (will be skipped).
+     *
+     * @param  CheckInterface $check Check instance that is about to be performed.
+     * @param  bool           $alias The alias being targeted by the check
+     * @return bool|void      Return false to prevent check from happening
+     */
+    public function onBeforeRun(CheckInterface $check, $alias = null) {}
 
+    /**
+     * This method is called every time a Check has been performed.
+     *
+     * @param  CheckInterface  $check  A Check instance that has just finished running
+     * @param  ResultInterface $result Result for that particular check instance
+     * @param  bool            $alias  The alias being targeted by the check
+     * @return bool|void       Return false to prevent from running additional Checks
+     */
+    public function onAfterRun(CheckInterface $check, ResultInterface $result, $alias = null)
+    {
         // Draw a symbol
         if ($result instanceof Success) {
             $this->console->write('.', Color::GREEN);
@@ -58,6 +90,8 @@ class BasicConsole extends AbstractReporter
             $this->console->write('F', Color::WHITE, Color::RED);
         } elseif ($result instanceof Warning) {
             $this->console->write('!', Color::YELLOW);
+        } elseif ($result instanceof Skip) {
+            $this->console->write('S', Color::YELLOW);
         } else {
             $this->console->write('?', Color::YELLOW);
         }
@@ -77,31 +111,56 @@ class BasicConsole extends AbstractReporter
         }
 
         $this->iter++;
-
-
     }
 
-    public function onFinish(RunEvent $e)
+    /**
+     * This method is called when Runner has been aborted and could not finish the
+     * whole run().
+     *
+     * @param  ResultsCollection $results Collection of Results for performed Checks.
+     * @return void
+     */
+    public function onStop(ResultsCollection $results)
     {
-        /* @var $results \ZFTool\Diagnostics\Result\Collection */
-        $results = $e->getResults();
+        $this->stopped = true;
+    }
+
+    /**
+     * This method is called when Runner has finished its run.
+     *
+     * @param  ResultsCollection $results Collection of Results for performed Checks.
+     * @return void
+     */
+    public function onFinish(ResultsCollection $results)
+    {
+        /* @var $results \ZendDiagnostics\Result\Collection */
         $this->console->writeLine();
         $this->console->writeLine();
 
         // Display a summary line
-        if ($results->getFailureCount() == 0 && $results->getWarningCount() == 0 && $results->getUnknownCount() == 0) {
-            $line = 'OK (' . $this->total . ' diagnostic tests)';
+        if (
+            $results->getFailureCount() == 0 &&
+            $results->getWarningCount() == 0 &&
+            $results->getUnknownCount() == 0 &&
+            $results->getSkipCount() == 0
+        ) {
+            $line = 'OK (' . $this->total . ' diagnostic checks)';
             $this->console->writeLine(
                 str_pad($line, $this->width-1, ' ', STR_PAD_RIGHT),
                 Color::NORMAL, Color::GREEN
             );
         } elseif ($results->getFailureCount() == 0) {
-            $line = $results->getWarningCount() . ' warnings, ';
-            $line .= $results->getSuccessCount() . ' successful tests';
+            $line = $results->getWarningCount() . ' warnings';
+
+            if ($results->getSkipCount() > 0) {
+                $line .= ', ' . $results->getSkipCount() . ' skipped checks';
+            }
 
             if ($results->getUnknownCount() > 0) {
-                $line .= ', ' . $results->getUnknownCount() . ' unknown test results';
+                $line .= ', ' . $results->getUnknownCount() . ' unknown check results';
             }
+
+            $line .= ', ' . $results->getSuccessCount() . ' successful checks';
 
             $line .= '.';
 
@@ -111,12 +170,17 @@ class BasicConsole extends AbstractReporter
             );
         } else {
             $line = $results->getFailureCount() . ' failures, ';
-            $line .= $results->getWarningCount() . ' warnings, ';
-            $line .= $results->getSuccessCount() . ' successful tests';
+            $line .= $results->getWarningCount() . ' warnings';
+
+            if ($results->getSkipCount() > 0) {
+                $line .= ', ' . $results->getSkipCount() . ' skipped checks';
+            }
 
             if ($results->getUnknownCount() > 0) {
-                $line .= ', ' . $results->getUnknownCount() . ' unknown test results';
+                $line .= ', ' . $results->getUnknownCount() . ' unknown check results';
             }
+
+            $line .= ', ' . $results->getSuccessCount() . ' successful checks';
 
             $line .= '.';
 
@@ -129,27 +193,34 @@ class BasicConsole extends AbstractReporter
         $this->console->writeLine();
 
         // Display a list of failures and warnings
-        foreach ($results as $test) {
-            /* @var $test \ZFTool\Diagnostics\Test\TestInterface */
-            /* @var $result \ZFTool\Diagnostics\Result\ResultInterface */
-            $result = $results[$test];
+        foreach ($results as $check) {
+            /* @var $check CheckInterface */
+            /* @var $result ResultInterface */
+            $result = $results[$check];
 
             if ($result instanceof Failure) {
-                $this->console->writeLine('Failure: ' . $test->getLabel(), Color::RED);
+                $this->console->writeLine('Failure: ' . $check->getLabel(), Color::RED);
                 $message = $result->getMessage();
                 if ($message) {
                     $this->console->writeLine($message, Color::RED);
                 }
                 $this->console->writeLine();
             } elseif ($result instanceof Warning) {
-                $this->console->writeLine('Warning: ' . $test->getLabel(), Color::YELLOW);
+                $this->console->writeLine('Warning: ' . $check->getLabel(), Color::YELLOW);
+                $message = $result->getMessage();
+                if ($message) {
+                    $this->console->writeLine($message, Color::YELLOW);
+                }
+                $this->console->writeLine();
+            } elseif ($result instanceof Skip) {
+                $this->console->writeLine('Skipped: ' . $check->getLabel(), Color::YELLOW);
                 $message = $result->getMessage();
                 if ($message) {
                     $this->console->writeLine($message, Color::YELLOW);
                 }
                 $this->console->writeLine();
             } elseif (!$result instanceof Success) {
-                $this->console->writeLine('Unknown result ' . get_class($result) . ': ' . $test->getLabel(), Color::YELLOW);
+                $this->console->writeLine('Unknown result ' . get_class($result) . ': ' . $check->getLabel(), Color::YELLOW);
                 $message = $result->getMessage();
                 if ($message) {
                     $this->console->writeLine($message, Color::YELLOW);
@@ -158,19 +229,16 @@ class BasicConsole extends AbstractReporter
             }
         }
 
-        // Display information that the test has been aborted.
+        // Display information that the check has been aborted.
         if ($this->stopped) {
             $this->console->writeLine('Diagnostics aborted because of a failure.', Color::RED);
         }
     }
 
-    public function onStop(RunEvent $e)
-    {
-        $this->stopped = true;
-    }
-
     /**
-     * @param \Zend\Console\Adapter\AdapterInterface $console
+     * Set Console adapter to use.
+     *
+     * @param Console $console
      */
     public function setConsole($console)
     {
@@ -181,12 +249,11 @@ class BasicConsole extends AbstractReporter
     }
 
     /**
-     * @return \Zend\Console\Adapter\AdapterInterface
+     * Get currently used Console adapter
+     * @return Console
      */
     public function getConsole()
     {
         return $this->console;
     }
-
-
 }

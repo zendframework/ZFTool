@@ -2,12 +2,9 @@
 
 namespace ZFToolTest;
 
-use ZFTool\Diagnostics\Result\Failure;
-use ZFTool\Diagnostics\Result\Success;
-use Zend\Mvc\ModuleRouteListener;
-use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
+use ZendDiagnostics\Result\Failure;
+use ZendDiagnostics\Result\Success;
 use Zend\ServiceManager\ServiceLocatorInterface;
-use Zend\ModuleManager\Listener\ConfigListener as ModuleManagerConfigListener;
 
 class DummyModule
 {
@@ -25,9 +22,8 @@ class DummyModule
 
     public function getDiagnostics()
     {
-        $moduleManager = $this->sm->get('modulemanager');
         return array(
-            'test1' => function() {return new Success('test1 success');},
+            'test1' => function () {return new Success('test1 success');},
             'test2' => array('is_string', 'a'),
             'test3' => array('stristr', 'abc','d'),
             'test4' => array(__CLASS__,'staticTestMethod'),
@@ -35,7 +31,7 @@ class DummyModule
         );
     }
 
-    public static function staticTestMethod($message = 'static test message')
+    public static function staticTestMethod($message = 'static check message')
     {
         return new Failure($message);
     }

@@ -189,7 +189,9 @@ class ClassmapController extends AbstractActionController
             $maxWidth = max($maxWidth, strlen($match[1]));
         }
 
-        $content = preg_replace('(\n\s+([^=]+)=>)e', "'\n    \\1' . str_repeat(' ', " . $maxWidth . " - strlen('\\1')) . '=>'", $content);
+        $content = preg_replace_callback('(\n\s+([^=]+)=>)', function ($match) use ($maxWidth) {
+            return "\n    " . $match[1] . str_repeat(' ', $maxWidth - strlen($match[1])) . '=>';
+        }, $content);
 
         if (!$usingStdout) {
             $console->writeLine(" DONE" . PHP_EOL, Color::GREEN);
