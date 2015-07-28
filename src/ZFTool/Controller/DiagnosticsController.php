@@ -2,26 +2,36 @@
 
 namespace ZFTool\Controller;
 
+use Zend\Console\Adapter\AdapterInterface;
 use Zend\Console\ColorInterface;
+use Zend\Console\Request as ConsoleRequest;
+use Zend\Http\Header\Accept;
+use Zend\Http\Request;
+use Zend\ModuleManager\ModuleManager;
+use Zend\Mvc\Controller\AbstractActionController;
+use Zend\View\Model\ConsoleModel;
+use Zend\View\Model\JsonModel;
+use Zend\View\Model\ViewModel;
 use ZendDiagnostics\Check\Callback;
 use ZendDiagnostics\Check\CheckInterface;
+use ZendDiagnostics\Result\Collection;
+use ZendDiagnostics\Result\FailureInterface;
+use ZendDiagnostics\Result\ResultInterface;
+use ZendDiagnostics\Result\SuccessInterface;
+use ZendDiagnostics\Result\WarningInterface;
 use ZFTool\Diagnostics\Exception\RuntimeException;
 use ZFTool\Diagnostics\Reporter\BasicConsole;
 use ZFTool\Diagnostics\Reporter\VerboseConsole;
 use ZFTool\Diagnostics\Runner;
-use Zend\Console\Request as ConsoleRequest;
-use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ConsoleModel;
-use Zend\View\Model\ViewModel;
 
 class DiagnosticsController extends AbstractActionController
 {
     public function runAction()
     {
         $sm = $this->getServiceLocator();
-        /* @var $console \Zend\Console\Adapter\AdapterInterface */
+        /* @var $console AdapterInterface */
         /* @var $config array */
-        /* @var $mm \Zend\ModuleManager\ModuleManager */
+        /* @var $mm ModuleManager */
         $console = $sm->get('console');
         $config = $sm->get('Configuration');
         $mm = $sm->get('ModuleManager');
@@ -213,8 +223,10 @@ class DiagnosticsController extends AbstractActionController
         // Run tests
         $results = $runner->run();
 
+        $request = $this->getRequest();
+
         // Return result
-        if ($this->getRequest() instanceof ConsoleRequest) {
+        if ($request instanceof ConsoleRequest) {
             // Return appropriate error code in console
             $model = new ConsoleModel();
             $model->setVariable('results', $results);
@@ -224,13 +236,78 @@ class DiagnosticsController extends AbstractActionController
             } else {
                 $model->setErrorLevel(0);
             }
-        } else {
-            // Display results as a web page
-            $model = new ViewModel();
-            $model->setVariable('results', $results);
+            return $model;
         }
 
-        return $model;
+        if ($request instanceof Request) {
+            $defaultAccept = new Accept();
+            $defaultAccept->addMediaType('text/html');
+
+            $acceptHeader = $request->getHeader('Accept', $defaultAccept);
+
+            $viewModel = function () use ($results) {
+                $model = new ViewModel();
+                $model->setVariable('results', $results);
+                return $model;
+            };
+
+            if ($acceptHeader->match('text/html')) {
+                // Display results as a web page
+                $model = $viewModel();
+            } else if ($acceptHeader->match('application/json')) {
+                // Display results as json
+                $model = new JsonModel();
+                $model->setVariables($this->getResultCollectionToArray($results));
+            } else {
+                $model = $viewModel();
+            }
+            return $model;
+        }
     }
 
+    /**
+     * @param ResultInterface $result
+     * @return string
+     */
+    protected function getResultName(ResultInterface $result)
+    {
+        switch (true) {
+            case $result instanceof SuccessInterface:
+                return 'success';
+            case $result instanceof WarningInterface:
+                return 'warning';
+            case $result instanceof FailureInterface:
+                return 'failure';
+            case $result instanceof ResultInterface:
+                return 'skip';
+            default:
+                return 'unknown';
+        }
+    }
+
+    /**
+     * @param Collection $results
+     * @return array
+     */
+    protected function getResultCollectionToArray(Collection $results)
+    {
+        foreach ($results as $item) {
+            $result = $results[$item];
+            $data[$item->getLabel()] = array(
+                'result' => $this->getResultName($result),
+                'message' => $result->getMessage(),
+                'data' => $result->getData(),
+            );
+        }
+
+        return array(
+            'details' => $data,
+            'success' => $results->getSuccessCount(),
+            'warning' => $results->getWarningCount(),
+            'failure' => $results->getFailureCount(),
+            'skip' => $results->getSkipCount(),
+            'unknown' => $results->getUnknownCount(),
+            'passed' => $results->getFailureCount() === 0,
+        );
+    }
 }

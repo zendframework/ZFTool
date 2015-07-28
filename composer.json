@@ -37,5 +37,8 @@
         "zendframework/zend-view": ">=2.2.2",
         "zendframework/zend-http": ">=2.2.2"
     },
+    "require-dev": {
+        "phpunit/PHPUnit": "3.7.*"
+    },
     "bin": ["zf.php"]
 }

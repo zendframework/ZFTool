@@ -701,6 +701,52 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('ZendDiagnostics\Result\Collection', $result->getVariable('results'));
     }
 
+    public function testJsonMode()
+    {
+        $this->config['diagnostics']['group']['test1'] = $check1 = new AlwaysSuccessCheck();
+
+        ob_start();
+        $request = new \Zend\Http\Request();
+        $request->getHeaders()->addHeader(\Zend\Http\Header\Accept::fromString('Accept: application/json'));
+        $result = $this->controller->dispatch($request);
+        $this->assertEquals('', ob_get_clean());
+
+        $this->assertInstanceOf('Zend\View\Model\JsonModel', $result);
+        $this->assertEquals(true, $result->getVariable('result'));
+        $this->assertEquals(1, $result->getVariable('success'));
+        $this->assertEquals(0, $result->getVariable('failure'));
+    }
+
+    public function testJsonModeFail()
+    {
+        $this->config['diagnostics']['group']['test1'] = $check1 = new \ZendDiagnosticsTest\TestAsset\Check\AlwaysFailure();
+
+        ob_start();
+        $request = new \Zend\Http\Request();
+        $request->getHeaders()->addHeader(\Zend\Http\Header\Accept::fromString('Accept: application/json'));
+        $result = $this->controller->dispatch($request);
+        $this->assertEquals('', ob_get_clean());
+
+        $this->assertInstanceOf('Zend\View\Model\JsonModel', $result);
+        $this->assertEquals(false, $result->getVariable('result'));
+        $this->assertEquals(0, $result->getVariable('success'));
+        $this->assertEquals(1, $result->getVariable('failure'));
+    }
+
+    public function testUnknownAccept()
+    {
+        $this->config['diagnostics']['group']['test1'] = $check1 = new AlwaysSuccessCheck();
+
+        ob_start();
+        $request = new \Zend\Http\Request();
+        $request->getHeaders()->addHeader(\Zend\Http\Header\Accept::fromString('Accept: application/baz'));
+        $result = $this->controller->dispatch($request);
+        $this->assertEquals('', ob_get_clean());
+
+        $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
+        $this->assertInstanceOf('ZendDiagnostics\Result\Collection', $result->getVariable('results'));
+    }
+
     public function testErrorCodes()
     {
         $this->routeMatch->setParam('quiet', true);
