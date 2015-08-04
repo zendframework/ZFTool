@@ -2,18 +2,20 @@
 namespace ZFToolTest\Diagnostics\Check;
 
 use Zend\Console\Request as ConsoleRequest;
+use Zend\Http;
 use Zend\Mvc\MvcEvent;
 use Zend\Mvc\Router\RouteMatch;
 use Zend\ServiceManager\ServiceManager;
 use Zend\Stdlib\ArrayObject;
 use Zend\Stdlib\ArrayUtils;
+use ZendDiagnostics\Check\Callback;
 use ZendDiagnostics\Result\Collection;
 use ZendDiagnostics\Result\Failure;
 use ZendDiagnostics\Result\Success;
 use ZendDiagnostics\Result\Warning;
-use ZendDiagnostics\Check\Callback;
 use ZFTool\Controller\DiagnosticsController;
 use ZFTool\Diagnostics\Exception\RuntimeException;
+use ZFToolTest\Diagnostics\TestAsset\AlwaysFailCheck;
 use ZFToolTest\Diagnostics\TestAsset\AlwaysSuccessCheck;
 use ZFToolTest\Diagnostics\TestAsset\ReturnThisCheck;
 use ZFToolTest\Diagnostics\TestAssets\ConsoleAdapter;
@@ -24,6 +26,7 @@ require_once __DIR__.'/TestAsset/ConsoleAdapter.php';
 require_once __DIR__.'/TestAsset/InjectableModuleManager.php';
 require_once __DIR__.'/TestAsset/ReturnThisCheck.php';
 require_once __DIR__.'/TestAsset/AlwaysSuccessCheck.php';
+require_once __DIR__.'/TestAsset/AlwaysFailCheck.php';
 require_once __DIR__.'/TestAsset/DummyModule.php';
 
 class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
@@ -693,9 +696,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     {
         $this->config['diagnostics']['group']['test1'] = $check1 = new AlwaysSuccessCheck();
 
-        ob_start();
-        $result = $this->controller->dispatch(new \Zend\Http\Request());
-        $this->assertEquals('', ob_get_clean());
+        $result = $this->controller->dispatch(new Http\Request());
 
         $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
         $this->assertInstanceOf('ZendDiagnostics\Result\Collection', $result->getVariable('results'));
@@ -705,43 +706,37 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     {
         $this->config['diagnostics']['group']['test1'] = $check1 = new AlwaysSuccessCheck();
 
-        ob_start();
-        $request = new \Zend\Http\Request();
-        $request->getHeaders()->addHeader(\Zend\Http\Header\Accept::fromString('Accept: application/json'));
+        $request = new Http\Request();
+        $request->getHeaders()->addHeader(Http\Header\Accept::fromString('Accept: application/json'));
         $result = $this->controller->dispatch($request);
-        $this->assertEquals('', ob_get_clean());
 
         $this->assertInstanceOf('Zend\View\Model\JsonModel', $result);
-        $this->assertEquals(true, $result->getVariable('result'));
-        $this->assertEquals(1, $result->getVariable('success'));
-        $this->assertEquals(0, $result->getVariable('failure'));
+        $this->assertTrue($result->getVariable('passed'));
+        $this->assertSame(1, $result->getVariable('success'));
+        $this->assertSame(0, $result->getVariable('failure'));
     }
 
     public function testJsonModeFail()
     {
-        $this->config['diagnostics']['group']['test1'] = $check1 = new \ZendDiagnosticsTest\TestAsset\Check\AlwaysFailure();
+        $this->config['diagnostics']['group']['test1'] = $check1 = new AlwaysFailCheck();
 
-        ob_start();
-        $request = new \Zend\Http\Request();
-        $request->getHeaders()->addHeader(\Zend\Http\Header\Accept::fromString('Accept: application/json'));
+        $request = new Http\Request();
+        $request->getHeaders()->addHeader(Http\Header\Accept::fromString('Accept: application/json'));
         $result = $this->controller->dispatch($request);
-        $this->assertEquals('', ob_get_clean());
 
         $this->assertInstanceOf('Zend\View\Model\JsonModel', $result);
-        $this->assertEquals(false, $result->getVariable('result'));
-        $this->assertEquals(0, $result->getVariable('success'));
-        $this->assertEquals(1, $result->getVariable('failure'));
+        $this->assertFalse($result->getVariable('passed'));
+        $this->assertSame(0, $result->getVariable('success'));
+        $this->assertSame(1, $result->getVariable('failure'));
     }
 
     public function testUnknownAccept()
     {
         $this->config['diagnostics']['group']['test1'] = $check1 = new AlwaysSuccessCheck();
 
-        ob_start();
-        $request = new \Zend\Http\Request();
-        $request->getHeaders()->addHeader(\Zend\Http\Header\Accept::fromString('Accept: application/baz'));
+        $request = new Http\Request();
+        $request->getHeaders()->addHeader(Http\Header\Accept::fromString('Accept: application/baz'));
         $result = $this->controller->dispatch($request);
-        $this->assertEquals('', ob_get_clean());
 
         $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
         $this->assertInstanceOf('ZendDiagnostics\Result\Collection', $result->getVariable('results'));

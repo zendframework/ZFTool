@@ -2,10 +2,12 @@
 namespace ZFToolTest\Diagnostics\TestAsset;
 
 use ZendDiagnostics\Check\AbstractCheck;
-use ZendDiagnostics\Check\CheckInterface;
 use ZendDiagnostics\Result\Failure;
 
-class AlwaysSuccessCheck extends AbstractCheck implements CheckInterface
+/**
+ * This check will always return fail
+ */
+class AlwaysFailCheck extends AbstractCheck
 {
     protected $label = 'Always Fail Check';
 

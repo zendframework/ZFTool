@@ -23,11 +23,11 @@ class Module implements
     /**
      * @var ServiceLocatorInterface
      */
-    protected $serviceLocator;
+    protected $sm;
 
     public function onBootstrap(EventInterface $e)
     {
-        $this->serviceLocator = $e->getApplication()->getServiceManager();
+        $this->sm = $e->getApplication()->getServiceManager();
     }
 
     public function getConfig()
@@ -53,7 +53,7 @@ class Module implements
 
     public function getConsoleUsage(ConsoleAdapterInterface $console)
     {
-        $config = $this->serviceLocator->get('config');
+        $config = $this->sm->get('config');
         if(!empty($config['ZFTool']) && !empty($config['ZFTool']['disable_usage'])){
             return null; // usage information has been disabled
         }

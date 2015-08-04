@@ -17,6 +17,7 @@ use ZendDiagnostics\Check\CheckInterface;
 use ZendDiagnostics\Result\Collection;
 use ZendDiagnostics\Result\FailureInterface;
 use ZendDiagnostics\Result\ResultInterface;
+use ZendDiagnostics\Result\SkipInterface;
 use ZendDiagnostics\Result\SuccessInterface;
 use ZendDiagnostics\Result\WarningInterface;
 use ZFTool\Diagnostics\Exception\RuntimeException;
@@ -26,6 +27,15 @@ use ZFTool\Diagnostics\Runner;
 
 class DiagnosticsController extends AbstractActionController
 {
+    const CONTENT_TYPE_HTML = 'text/html';
+    const CONTENT_TYPE_JSON = 'application/json';
+
+    const RESULT_SUCCESS = 'success';
+    const RESULT_WARNING = 'warning';
+    const RESULT_FAILURE = 'failure';
+    const RESULT_SKIP = 'skip';
+    const RESULT_UNKNOWN = 'unknown';
+
     public function runAction()
     {
         $sm = $this->getServiceLocator();
@@ -227,7 +237,17 @@ class DiagnosticsController extends AbstractActionController
 
         // Return result
         if ($request instanceof ConsoleRequest) {
-            // Return appropriate error code in console
+            return $this->processConsoleRequest($results);
+        }
+
+        if ($request instanceof Request) {
+            return $this->processHttpRequest($request, $results);
+        }
+    }
+
+    private function processConsoleRequest(Collection $results)
+    {
+        // Return appropriate error code in console
             $model = new ConsoleModel();
             $model->setVariable('results', $results);
 
@@ -237,32 +257,32 @@ class DiagnosticsController extends AbstractActionController
                 $model->setErrorLevel(0);
             }
             return $model;
+    }
+
+    private function processHttpRequest(Request $request, Collection $results)
+    {
+        $defaultAccept = new Accept();
+        $defaultAccept->addMediaType(self::CONTENT_TYPE_HTML);
+
+        $acceptHeader = $request->getHeader('Accept', $defaultAccept);
+
+        $viewModel = function () use ($results) {
+            $model = new ViewModel();
+            $model->setVariable('results', $results);
+            return $model;
+        };
+
+        if ($acceptHeader->match(self::CONTENT_TYPE_HTML)) {
+            // Display results as a web page
+            return $viewModel();
         }
-
-        if ($request instanceof Request) {
-            $defaultAccept = new Accept();
-            $defaultAccept->addMediaType('text/html');
-
-            $acceptHeader = $request->getHeader('Accept', $defaultAccept);
-
-            $viewModel = function () use ($results) {
-                $model = new ViewModel();
-                $model->setVariable('results', $results);
-                return $model;
-            };
-
-            if ($acceptHeader->match('text/html')) {
-                // Display results as a web page
-                $model = $viewModel();
-            } else if ($acceptHeader->match('application/json')) {
-                // Display results as json
-                $model = new JsonModel();
-                $model->setVariables($this->getResultCollectionToArray($results));
-            } else {
-                $model = $viewModel();
-            }
+        if ($acceptHeader->match(self::CONTENT_TYPE_JSON)) {
+            // Display results as json
+            $model = new JsonModel();
+            $model->setVariables($this->getResultCollectionToArray($results));
             return $model;
         }
+        return $viewModel();
     }
 
     /**
@@ -273,15 +293,15 @@ class DiagnosticsController extends AbstractActionController
     {
         switch (true) {
             case $result instanceof SuccessInterface:
-                return 'success';
+                return self::RESULT_SUCCESS;
             case $result instanceof WarningInterface:
-                return 'warning';
+                return self::RESULT_WARNING;
             case $result instanceof FailureInterface:
-                return 'failure';
-            case $result instanceof ResultInterface:
-                return 'skip';
+                return self::RESULT_FAILURE;
+            case $result instanceof SkipInterface:
+                return self::RESULT_SKIP;
             default:
-                return 'unknown';
+                return self::RESULT_UNKNOWN;
         }
     }
 

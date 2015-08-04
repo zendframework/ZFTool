@@ -1,4 +1,6 @@
-<phpunit bootstrap="./Bootstrap.php" colors="true">
+<?xml version="1.0" encoding="utf-8" ?>
+
+<phpunit bootstrap="./Bootstrap.php" colors="true" beStrictAboutOutputDuringTests="false">
     <testsuites>
         <testsuite name="ZFTool Test Suite">
             <directory>./ZFToolTest</directory>
