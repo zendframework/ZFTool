@@ -71,11 +71,11 @@ class SkeletonTest extends \PHPUnit_Framework_TestCase
 array(
     'foo' => array(
         'foo2' => 'bar2',
-        'foo3' => 'bar3'
-        ),
-    'bar'
-    )
+        'foo3' => 'bar3',
+    ),
+    'bar',
+)
 EOD;
-        $this->assertEquals($expected, $export);
+        $this->assertEquals($expected, (string) $export);
     }
 }

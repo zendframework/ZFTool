@@ -3,9 +3,11 @@ namespace ZFToolTest\Diagnostics\TestAsset;
 
 use ZendDiagnostics\Result\Success;
 use ZendDiagnostics\Check\AbstractCheck;
-use ZendDiagnostics\Check\CheckInterface;
 
-class AlwaysSuccessCheck extends AbstractCheck implements CheckInterface
+/**
+ * This check will always return success
+ */
+class AlwaysSuccessCheck extends AbstractCheck
 {
     protected $label = 'Always Successful Check';
 
