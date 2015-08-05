@@ -266,21 +266,15 @@ class DiagnosticsController extends AbstractActionController
 
         $acceptHeader = $request->getHeader('Accept', $defaultAccept);
 
-        $viewModel = function () use ($results) {
-            return new ViewModel(array(
-                'results' => $results,
-            ));
-        };
-
         if ($acceptHeader->match(self::CONTENT_TYPE_HTML)) {
             // Display results as a web page
-            return $viewModel();
+            return new ViewModel(array('results' => $results));
         }
         if ($acceptHeader->match(self::CONTENT_TYPE_JSON)) {
             // Display results as json
             return new JsonModel($this->getResultCollectionToArray($results));
         }
-        return $viewModel();
+        return new ViewModel(array('results' => $results));
     }
 
     /**
