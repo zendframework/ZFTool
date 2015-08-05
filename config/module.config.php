@@ -9,7 +9,7 @@ return array(
     'controllers' => array(
         'invokables' => array(
             'ZFTool\Controller\Info'        => 'ZFTool\Controller\InfoController',
-            'ZFTool\Controller\Config'        => 'ZFTool\Controller\ConfigController',
+            'ZFTool\Controller\Config'      => 'ZFTool\Controller\ConfigController',
             'ZFTool\Controller\Module'      => 'ZFTool\Controller\ModuleController',
             'ZFTool\Controller\Classmap'    => 'ZFTool\Controller\ClassmapController',
             'ZFTool\Controller\Create'      => 'ZFTool\Controller\CreateController',

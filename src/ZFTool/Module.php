@@ -4,15 +4,21 @@ namespace ZFTool;
 
 use Zend\Console\Adapter\AdapterInterface as ConsoleAdapterInterface;
 use Zend\EventManager\EventInterface;
-use Zend\Mvc\ModuleRouteListener;
 use Zend\ModuleManager\Feature\ConsoleUsageProviderInterface;
+use Zend\ModuleManager\Feature\ConsoleBannerProviderInterface;
+use Zend\ModuleManager\Feature\BootstrapListenerInterface;
 use Zend\ModuleManager\Feature\AutoloaderProviderInterface;
 use Zend\ModuleManager\Feature\ConfigProviderInterface;
 use Zend\ServiceManager\ServiceLocatorInterface;
 
-class Module implements ConsoleUsageProviderInterface, AutoloaderProviderInterface, ConfigProviderInterface
+class Module implements
+    ConsoleUsageProviderInterface,
+    AutoloaderProviderInterface,
+    ConfigProviderInterface,
+    ConsoleBannerProviderInterface,
+    BootstrapListenerInterface
 {
-    const NAME    = 'ZFTool - Zend Framework 2 command line Tool';
+    const NAME = 'ZFTool - Zend Framework 2 command line Tool';
 
     /**
      * @var ServiceLocatorInterface
