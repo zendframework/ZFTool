@@ -248,8 +248,7 @@ class DiagnosticsController extends AbstractActionController
     private function processConsoleRequest(Collection $results)
     {
         // Return appropriate error code in console
-            $model = new ConsoleModel();
-            $model->setVariable('results', $results);
+            $model = new ConsoleModel(array('results' => $results));
 
             if ($results->getFailureCount() > 0) {
                 $model->setErrorLevel(1);
