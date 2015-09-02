@@ -9,7 +9,9 @@ use Zend\ModuleManager\ModuleManager;
  */
 class InjectableModuleManager extends ModuleManager
 {
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     public function injectModule($name, $module)
     {

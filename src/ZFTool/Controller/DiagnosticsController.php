@@ -97,8 +97,7 @@ class DiagnosticsController extends AbstractActionController
                     "There are no diagnostic checks currently enabled for this application - please add one or more " .
                     "entries into config \"diagnostics\" array or add getDiagnostics() method to your Module class. " .
                     "\n\nMore info: https://github.com/zendframework/ZFTool/blob/master/docs/" .
-                    "DIAGNOSTICS.md#adding-checks-to-your-module\n"
-                , ColorInterface::YELLOW)
+                    "DIAGNOSTICS.md#adding-checks-to-your-module\n", ColorInterface::YELLOW)
             );
             $m->setErrorLevel(1);
 
@@ -132,7 +131,6 @@ class DiagnosticsController extends AbstractActionController
                             'Cannot use object of class "' . get_class($check). '" as check. '.
                             'Expected instance of ZendDiagnostics\Check\CheckInterface'
                         );
-
                     }
 
                     // Use duck-typing for determining if the check allows for setting custom label
@@ -154,11 +152,9 @@ class DiagnosticsController extends AbstractActionController
                     // extract check identifier and store the remainder of array as parameters
                     $testName = array_shift($check);
                     $params = $check;
-
                 } elseif (is_scalar($check)) {
                     $testName = $check;
                     $params = array();
-
                 } else {
                     throw new RuntimeException(
                         'Cannot understand diagnostic check definition "' . gettype($check). '" in "'.$checkGroupName.'"'
@@ -193,7 +189,6 @@ class DiagnosticsController extends AbstractActionController
                 } elseif (is_string($testName) && class_exists($testName)) {
                     $class = new \ReflectionClass($testName);
                     $check = $class->newInstanceArgs($params);
-
                 } else {
                     throw new RuntimeException(
                         'Cannot find check class or service with the name of "' . $testName . '" ('.$checkGroupName.')'

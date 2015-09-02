@@ -95,7 +95,9 @@ class VerboseConsole implements ReporterInterface
      * @param  bool           $alias The alias being targeted by the check
      * @return bool|void      Return false to prevent check from happening
      */
-    public function onBeforeRun(CheckInterface $check, $alias = null) {}
+    public function onBeforeRun(CheckInterface $check, $alias = null)
+    {
+    }
 
     /**
      * This method is called every time a Check has been performed. If this method
@@ -249,7 +251,6 @@ class VerboseConsole implements ReporterInterface
         }
 
         $this->console->writeLine();
-
     }
 
     /**
@@ -310,6 +311,6 @@ class VerboseConsole implements ReporterInterface
             $lines[$x] = $padding . $lines[$x];
         }
 
-        return join(PHP_EOL, $lines);
+        return implode(PHP_EOL, $lines);
     }
 }

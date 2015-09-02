@@ -3,7 +3,6 @@
 namespace ZFTool\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
 use Zend\View\Model\ConsoleModel;
 use ZFTool\Model\Zf;
 use ZFTool\Model\Utility;
@@ -24,7 +23,7 @@ class InstallController extends AbstractActionController
         $path    = rtrim($request->getParam('path'), '/');
 
         if (file_exists($path)) {
-            return $this->sendError (
+            return $this->sendError(
                 "The directory $path already exists. You cannot install the ZF2 library here."
             );
         }
@@ -32,13 +31,13 @@ class InstallController extends AbstractActionController
         if (empty($version)) {
             $version = Zf::getLastVersion();
             if (false === $version) {
-                return $this->sendError (
+                return $this->sendError(
                     "I cannot connect to the Zend Framework website."
                 );
             }
         } else {
             if (!Zf::checkVersion($version)) {
-                return $this->sendError (
+                return $this->sendError(
                     "The specified ZF version, $version, doesn't exist."
                 );
             }
@@ -47,7 +46,7 @@ class InstallController extends AbstractActionController
         $tmpFile = ZF::getTmpFileName($tmpDir, $version);
         if (!file_exists($tmpFile)) {
             if (!Zf::downloadZip($tmpFile, $version)) {
-                return $this->sendError (
+                return $this->sendError(
                     "I cannot download the ZF2 library from github."
                 );
             }

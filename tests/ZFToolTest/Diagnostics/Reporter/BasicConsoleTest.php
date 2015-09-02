@@ -70,7 +70,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
     public function testProgressDots()
     {
-        $checks = new ArrayObject(array_fill(0,5, new AlwaysSuccessCheck()));
+        $checks = new ArrayObject(array_fill(0, 5, new AlwaysSuccessCheck()));
         ob_start();
         $this->reporter->onStart($checks, array());
         ob_clean();
@@ -85,7 +85,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
     public function testWarningSymbols()
     {
-        $checks = new ArrayObject(array_fill(0,5, new AlwaysSuccessCheck()));
+        $checks = new ArrayObject(array_fill(0, 5, new AlwaysSuccessCheck()));
         ob_start();
         $this->reporter->onStart($checks, array());
         ob_get_clean();
@@ -101,8 +101,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
     public function testFailureSymbols()
     {
-
-        $checks = new ArrayObject(array_fill(0,5, new AlwaysSuccessCheck()));
+        $checks = new ArrayObject(array_fill(0, 5, new AlwaysSuccessCheck()));
 
         ob_start();
         $this->reporter->onStart($checks, array());
@@ -119,8 +118,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
     public function testUnknownSymbols()
     {
-
-        $checks = new ArrayObject(array_fill(0,5, new AlwaysSuccessCheck()));
+        $checks = new ArrayObject(array_fill(0, 5, new AlwaysSuccessCheck()));
 
         ob_start();
         $this->reporter->onStart($checks, array());
@@ -138,9 +136,8 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
     public function testProgressDotsNoGutter()
     {
-
         $this->console->setTestWidth(40);
-        $checks = new ArrayObject(array_fill(0,40, new AlwaysSuccessCheck()));
+        $checks = new ArrayObject(array_fill(0, 40, new AlwaysSuccessCheck()));
 
         ob_start();
         $this->reporter->onStart($checks, array());
@@ -158,7 +155,7 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
     public function testProgressOverflow()
     {
         $this->console->setTestWidth(40);
-        $checks = new ArrayObject(array_fill(0,80, new AlwaysSuccessCheck()));
+        $checks = new ArrayObject(array_fill(0, 80, new AlwaysSuccessCheck()));
 
         ob_start();
         $this->reporter->onStart($checks, array());
@@ -180,9 +177,8 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
 
     public function testProgressOverflowMatch()
     {
-
         $this->console->setTestWidth(40);
-        $checks = new ArrayObject(array_fill(0,75, new AlwaysSuccessCheck()));
+        $checks = new ArrayObject(array_fill(0, 75, new AlwaysSuccessCheck()));
 
         ob_start();
         $this->reporter->onStart($checks, array());
@@ -389,5 +385,4 @@ class BasicConsoleTest extends \PHPUnit_Framework_TestCase
         $this->reporter->onFinish($results);
         $this->assertStringMatchesFormat('%ADiagnostics aborted%A', trim(ob_get_clean()));
     }
-
 }

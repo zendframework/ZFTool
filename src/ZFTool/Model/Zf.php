@@ -71,7 +71,7 @@ class Zf
         if (empty($content)) {
             return false;
         }
-       return (file_put_contents($file, $content) !== false);
+        return (file_put_contents($file, $content) !== false);
     }
 
     /**
