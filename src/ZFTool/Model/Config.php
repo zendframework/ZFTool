@@ -36,8 +36,7 @@ class Config
 
     public function write($dottedName, $value)
     {
-
-        $getset = function($getset, $name, $value, &$array) {
+        $getset = function ($getset, $name, $value, &$array) {
             $n = array_shift($name);
             if (count($name) > 0) {
                 $array[$n] = array();
@@ -61,5 +60,4 @@ class Config
     {
         return static::findValueInArray($dottedName, $this->config);
     }
-
 }

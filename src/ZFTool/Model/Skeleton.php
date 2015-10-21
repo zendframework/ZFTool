@@ -149,7 +149,6 @@ EOD;
      */
     public static function getContextProxy()
     {
-
         $proxyURL = getenv('HTTP_PROXY');
 
         if (!$proxyURL) {

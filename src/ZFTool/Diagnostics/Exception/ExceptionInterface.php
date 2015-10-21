@@ -13,4 +13,5 @@ namespace ZFTool\Diagnostics\Exception;
  * Zend_Session_Exception
  */
 interface ExceptionInterface
-{}
+{
+}

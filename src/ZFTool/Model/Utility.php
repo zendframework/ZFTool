@@ -37,7 +37,7 @@ class Utility
                 if (!@copy($item, $destName)) {
                     return false;
                 }
-                chmod ($destName, fileperms($item));
+                chmod($destName, fileperms($item));
             }
         }
         return true;
@@ -59,7 +59,7 @@ class Utility
             RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($iterator as $item) {
-            if ($item->isDir()){
+            if ($item->isDir()) {
                 if (!@rmdir($item->getRealPath())) {
                     return false;
                 }

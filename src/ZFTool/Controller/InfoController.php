@@ -3,7 +3,6 @@
 namespace ZFTool\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
 use Zend\Stdlib\ArrayUtils;
 use Zend\Version\Version;
 use Zend\Console\ColorInterface as Color;
@@ -35,10 +34,10 @@ class InfoController extends AbstractActionController
         $sm = $this->getServiceLocator();
         $config = $sm->get('Configuration');
 
-        if(!is_array($config)){
+        if (!is_array($config)) {
             $config = ArrayUtils::iteratorToArray($config, true);
         }
-        $console->writeLine ('Configuration:', Color::GREEN);
+        $console->writeLine('Configuration:', Color::GREEN);
         print_r($config);
     }
 
@@ -57,5 +56,4 @@ class InfoController extends AbstractActionController
         }
         return false;
     }
-
 }

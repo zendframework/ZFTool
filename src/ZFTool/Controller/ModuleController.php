@@ -2,11 +2,8 @@
 namespace ZFTool\Controller;
 
 use Zend\Mvc\Controller\AbstractActionController;
-use Zend\View\Model\ViewModel;
-use Zend\Stdlib\ArrayUtils;
 use Zend\ServiceManager\Exception\ServiceNotFoundException;
 use Zend\View\Model\ConsoleModel;
-use Zend\Version;
 use Zend\Console\ColorInterface as Color;
 
 class ModuleController extends AbstractActionController
@@ -38,16 +35,16 @@ class ModuleController extends AbstractActionController
     protected function getModulesFromService()
     {
         $sm = $this->getServiceLocator();
-        try{
+        try {
             /* @var $mm \Zend\ModuleManager\ModuleManager */
             $mm = $sm->get('modulemanager');
-        } catch(ServiceNotFoundException $e) {
+        } catch (ServiceNotFoundException $e) {
             return $this->sendError(
                 'Cannot get Zend\ModuleManager\ModuleManager instance. Is your application using it?'
             );
         }
         $modules = array_keys($mm->getLoadedModules(false));
-       
+
         return $modules;
     }
 }

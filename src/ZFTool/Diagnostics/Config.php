@@ -56,5 +56,4 @@ class Config extends AbstractOptions implements ConfigInterface
     {
         return $this->catchErrorSeverity;
     }
-
 }

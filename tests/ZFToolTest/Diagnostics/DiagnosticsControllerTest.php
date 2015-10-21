@@ -67,7 +67,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         $this->sm = new ServiceManager();
         $this->sm->setService('console', new ConsoleAdapter());
         $this->sm->setService('config', $this->config);
-        $this->sm->setAlias('configuration','config');
+        $this->sm->setAlias('configuration', 'config');
 
         $this->mm = new InjectableModuleManager();
         $this->sm->setService('modulemanager', $this->mm);
@@ -220,8 +220,8 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     public function testConfigBasedStaticMethodWithParams()
     {
         static::$staticTestMethodCalled = false;
-        $expectedData = mt_rand(1,PHP_INT_MAX);
-        $expectedMessage = mt_rand(1,PHP_INT_MAX);
+        $expectedData = mt_rand(1, PHP_INT_MAX);
+        $expectedMessage = mt_rand(1, PHP_INT_MAX);
         $this->config['diagnostics']['group']['foo'] = array(
             array(__CLASS__, 'staticTestMethod'),
             $expectedMessage,
@@ -280,8 +280,8 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
      */
     public function testConfigBasedFunctionWithParams()
     {
-        $expectedData = mt_rand(1,PHP_INT_MAX);
-        $expectedMessage = mt_rand(1,PHP_INT_MAX);
+        $expectedData = mt_rand(1, PHP_INT_MAX);
+        $expectedMessage = mt_rand(1, PHP_INT_MAX);
         $this->config['diagnostics']['group']['foo'] = array(
             __NAMESPACE__ . '\testOutlineFunction',
             $expectedMessage,
@@ -343,8 +343,8 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
      */
     public function testConfigBasedServiceName()
     {
-        $expectedData = mt_rand(1,PHP_INT_MAX);
-        $expectedMessage = mt_rand(1,PHP_INT_MAX);
+        $expectedData = mt_rand(1, PHP_INT_MAX);
+        $expectedMessage = mt_rand(1, PHP_INT_MAX);
         $check = new Callback(function () use ($expectedMessage, $expectedData) {
             return new Success($expectedMessage, $expectedData);
         });
@@ -394,7 +394,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
     public function testModuleProvidedDefinitions()
     {
         $module = new DummyModule($this->sm);
-        $this->mm->injectModule('dummymodule',$module);
+        $this->mm->injectModule('dummymodule', $module);
         $result = $this->controller->dispatch(new ConsoleRequest());
 
         $this->assertInstanceOf('Zend\View\Model\ViewModel', $result);
@@ -485,7 +485,7 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('ZendDiagnostics\Result\Failure', $results[$check]);
         $this->assertSame($someObj, $results[$check]->getData());
 
-        $someResource = fopen('php://memory','r');
+        $someResource = fopen('php://memory', 'r');
         fclose($someResource);
         $check = new ReturnThisCheck($someResource);
         $this->config['diagnostics']['group']['foo'] = $check;
@@ -768,7 +768,6 @@ class DiagnosticsControllerTest extends \PHPUnit_Framework_TestCase
 
         return new Success($message, $data);
     }
-
 }
 
 function testOutlineFunction($message = 'bar', $data = null)

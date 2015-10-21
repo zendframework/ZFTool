@@ -10,4 +10,5 @@
 namespace ZFTool\Diagnostics\Exception;
 
 class RuntimeException extends \RuntimeException implements ExceptionInterface
-{}
+{
+}
