@@ -12,10 +12,10 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
     {
         $this->tmp = sys_get_temp_dir() . '/testZFTool';
 
-        mkdir ($this->tmp);
+        mkdir($this->tmp);
         file_put_contents($this->tmp . '/foo', 'bar');
-        chmod ($this->tmp . '/foo', 0755);
-        mkdir ($this->tmp . '/foo-dir');
+        chmod($this->tmp . '/foo', 0755);
+        mkdir($this->tmp . '/foo-dir');
         file_put_contents($this->tmp . '/foo-dir/foo2', 'bar2');
     }
 
@@ -31,7 +31,7 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
     {
         $tmpDir2 = $this->tmp . '2';
 
-        $result = Utility::copyFiles( $this->tmp, $tmpDir2);
+        $result = Utility::copyFiles($this->tmp, $tmpDir2);
         $this->assertTrue($result);
         $this->assertTrue(file_exists($tmpDir2 . '/foo'));
         $this->assertEquals('bar', file_get_contents($tmpDir2 . '/foo'));
@@ -53,5 +53,4 @@ class UtilityTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($result);
         $this->assertFalse(file_exists($this->tmp));
     }
-
 }

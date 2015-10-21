@@ -8,7 +8,6 @@ use Zend\Version\Version;
 use Zend\Console\ColorInterface as Color;
 use Zend\Config\Writer\Ini as IniWriter;
 use ZFTool\Model\Config;
-use ZFTool\Module;
 
 class ConfigController extends AbstractActionController
 {
@@ -33,7 +32,7 @@ class ConfigController extends AbstractActionController
             $config = $sm->get('Configuration');
         }
 
-        if (!is_array($config)){
+        if (!is_array($config)) {
             $config = ArrayUtils::iteratorToArray($config, true);
         }
 
@@ -110,5 +109,4 @@ class ConfigController extends AbstractActionController
         }
         return false;
     }
-
 }

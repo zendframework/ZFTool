@@ -29,7 +29,7 @@ class CreateController extends AbstractActionController
         $path    = rtrim($request->getParam('path'), '/');
 
         if (file_exists($path)) {
-            return $this->sendError (
+            return $this->sendError(
                 "The directory $path already exists. You cannot create a ZF2 project here."
             );
         }
@@ -279,7 +279,7 @@ class CreateController extends AbstractActionController
         $application = require "$path/config/application.config.php";
         if (!in_array($name, $application['modules'])) {
             $application['modules'][] = $name;
-            copy ("$path/config/application.config.php", "$path/config/application.config.old");
+            copy("$path/config/application.config.php", "$path/config/application.config.old");
             $content = <<<EOD
 <?php
 /**

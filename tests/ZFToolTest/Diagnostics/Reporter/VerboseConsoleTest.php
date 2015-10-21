@@ -160,8 +160,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             '  OK   Always Successful Check: foo foo' . PHP_EOL .
             '       foo foo foo foo foo foo foo foo' . PHP_EOL .
-            '       foo foo foo foo foo foo foo'     . PHP_EOL
-            , ob_get_clean()
+            '       foo foo foo foo foo foo foo'     . PHP_EOL, ob_get_clean()
         );
         ob_start();
 
@@ -174,8 +173,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
             ' FAIL  Always Successful Check:'           . PHP_EOL .
             '       foofoofoofoofoofoofoofoofoofoofoo' . PHP_EOL .
             '       foofoofoofoofoofoofoofoofoofoofoo' . PHP_EOL .
-            '       foo'                               . PHP_EOL
-            , ob_get_clean()
+            '       foo'                               . PHP_EOL, ob_get_clean()
         );
     }
 
@@ -194,7 +192,7 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
         $this->reporter->onStart($checks, array());
         ob_clean();
 
-        $result = new Success('foo', array('1',2,3));
+        $result = new Success('foo', array('1', 2, 3));
         $this->reporter->onAfterRun($checks[0], $result);
         $this->assertEquals(
             '  OK   Always Successful Check: foo'       . PHP_EOL .
@@ -204,15 +202,13 @@ class VerboseConsoleTest extends \PHPUnit_Framework_TestCase
             '         1 => 2,'                         . PHP_EOL .
             '         2 => 3,'                         . PHP_EOL .
             '       )'                                 . PHP_EOL .
-            '       ---------------------------------' . PHP_EOL
-            , ob_get_clean()
+            '       ---------------------------------' . PHP_EOL, ob_get_clean()
         );
         ob_start();
     }
 
     public function testSummaryAllSuccessful()
     {
-
         $checks = new ArrayObject(array());
         $check = null;
         $results = new Collection();

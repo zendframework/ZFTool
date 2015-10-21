@@ -54,8 +54,8 @@ class Module implements
     public function getConsoleUsage(ConsoleAdapterInterface $console)
     {
         $config = $this->sm->get('config');
-        if(!empty($config['ZFTool']) && !empty($config['ZFTool']['disable_usage'])){
-            return null; // usage information has been disabled
+        if (!empty($config['ZFTool']) && !empty($config['ZFTool']['disable_usage'])) {
+            return; // usage information has been disabled
         }
 
         // TODO: Load strings from a translation container
