@@ -28,7 +28,9 @@ class DummyReporter implements ReporterInterface
      * @param  array       $runnerConfig Complete Runner configuration, obtained via Runner::getConfig()
      * @return void
      */
-    public function onStart(ArrayObject $checks, $runnerConfig) {}
+    public function onStart(ArrayObject $checks, $runnerConfig)
+    {
+    }
 
     /**
      * This method is called before each individual Check is performed. If this
@@ -38,7 +40,9 @@ class DummyReporter implements ReporterInterface
      * @param  bool           $alias Test alias.
      * @return bool|void      Return false to prevent check from happening
      */
-    public function onBeforeRun(CheckInterface $check, $alias = null) {}
+    public function onBeforeRun(CheckInterface $check, $alias = null)
+    {
+    }
 
     /**
      * This method is called every time a Check has been performed. If this method
@@ -64,7 +68,9 @@ class DummyReporter implements ReporterInterface
      * @param  ResultsCollection $results Collection of Results for performed Checks.
      * @return void
      */
-    public function onStop(ResultsCollection $results) {}
+    public function onStop(ResultsCollection $results)
+    {
+    }
 
     /**
      * This method is called when Runner has finished its run.
@@ -72,5 +78,7 @@ class DummyReporter implements ReporterInterface
      * @param  ResultsCollection $results Collection of Results for performed Checks.
      * @return void
      */
-    public function onFinish(ResultsCollection $results) {}
+    public function onFinish(ResultsCollection $results)
+    {
+    }
 }

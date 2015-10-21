@@ -71,7 +71,9 @@ class BasicConsole implements ReporterInterface
      * @param  bool           $alias The alias being targeted by the check
      * @return bool|void      Return false to prevent check from happening
      */
-    public function onBeforeRun(CheckInterface $check, $alias = null) {}
+    public function onBeforeRun(CheckInterface $check, $alias = null)
+    {
+    }
 
     /**
      * This method is called every time a Check has been performed.
@@ -103,8 +105,7 @@ class BasicConsole implements ReporterInterface
             $this->console->write(
                 str_pad(
                     str_pad($this->iter, $this->countLength, ' ', STR_PAD_LEFT) . ' / ' . $this->total .
-                    ' (' . str_pad(round($this->iter / $this->total * 100), 3, ' ', STR_PAD_LEFT) . '%)'
-                    , $this->gutter, ' ', STR_PAD_LEFT
+                    ' (' . str_pad(round($this->iter / $this->total * 100), 3, ' ', STR_PAD_LEFT) . '%)', $this->gutter, ' ', STR_PAD_LEFT
                 )
             );
             $this->pos = 1;

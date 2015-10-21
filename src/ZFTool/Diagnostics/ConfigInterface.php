@@ -30,5 +30,4 @@ interface ConfigInterface
      * @param int $catchErrorSeverity
      */
     public function setCatchErrorSeverity($catchErrorSeverity);
-
 }
