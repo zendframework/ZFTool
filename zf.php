@@ -14,8 +14,8 @@ ini_set('user_agent', 'ZFTool - Zend Framework 2 command line tool');
 // load autoloader
 if (file_exists("$basePath/vendor/autoload.php")) {
     require_once "$basePath/vendor/autoload.php";
-} elseif (file_exists("$basePath/init_autoload.php")) {
-    require_once "$basePath/init_autoload.php";
+} elseif (file_exists("$basePath/init_autoloader.php")) {
+    require_once "$basePath/init_autoloader.php";
 } elseif (\Phar::running()) {
     require_once __DIR__ . '/vendor/autoload.php';
 } else {
