@@ -1,6 +1,10 @@
   Zend Framework 2 Tool
 =========================
 
+> ## Repository abandoned 2019-12-05
+>
+> This repository is no longer maintained. Tooling was not updated to work with ZF3, and with the transition to Laminas, we will be deciding what, if any, new tooling we want to provide for the MVC framework.
+
 **ZFTool** is an utility module for maintaining modular Zend Framework 2 applications.
 It runs from the command line and can be installed as ZF2 module or as PHAR (see below).
 
